@@ -1,86 +1,106 @@
 ---
-import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
-import BaseHead from '../components/BaseHead.astro';
-import Footer from '../components/Footer.astro';
-import FormattedDate from '../components/FormattedDate.astro';
-import Header from '../components/Header.astro';
+import BaseLayout from './BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+import { SITE_TITLE } from '../consts';
 
-type Props = CollectionEntry<'blog'>['data'];
+type Props = CollectionEntry<'blog'>['data'] & { 
+    slug: string;
+    prev?: { slug: string; title: string } | null;
+    next?: { slug: string; title: string } | null;
+};
 
-const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+const { 
+    title, 
+    description, 
+    pubDate, 
+    updatedDate, 
+    slug,
+    isAdvertise,
+    position,
+    positionUrl,
+    prev,
+    next
+} = Astro.props;
+
+// 获取文章内容
+const { Content } = await Astro.props.render?.() || { Content: null };
 ---
 
-<html lang="en">
-	<head>
-		<BaseHead title={title} description={description} />
-		<style>
-			main {
-				width: calc(100% - 2em);
-				max-width: 100%;
-				margin: 0;
-			}
-			.hero-image {
-				width: 100%;
-			}
-			.hero-image img {
-				display: block;
-				margin: 0 auto;
-				border-radius: 12px;
-				box-shadow: var(--box-shadow);
-			}
-			.prose {
-				width: 720px;
-				max-width: calc(100% - 2em);
-				margin: auto;
-				padding: 1em;
-				color: rgb(var(--gray-dark));
-			}
-			.title {
-				margin-bottom: 1em;
-				padding: 1em 0;
-				text-align: center;
-				line-height: 1;
-			}
-			.title h1 {
-				margin: 0 0 0.5em 0;
-			}
-			.date {
-				margin-bottom: 0.5em;
-				color: rgb(var(--gray));
-			}
-			.last-updated-on {
-				font-style: italic;
-			}
-		</style>
-	</head>
+<BaseLayout title={`${title} | ${SITE_TITLE}`} description={description}>
+    <PostCard 
+        title={title}
+        description={description}
+        pubDate={pubDate}
+        updatedDate={updatedDate}
+        slug={slug}
+        isAdvertise={isAdvertise}
+        position={position}
+        positionUrl={positionUrl}
+        isSingle={true}
+        content={Content ? '' : description || ''}
+    />
+    
+    {Content && (
+        <div class="post-content text">
+            <Content />
+        </div>
+    )}
 
-	<body>
-		<Header />
-		<main>
-			<article>
-				<div class="hero-image">
-					{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
-				</div>
-				<div class="prose">
-					<div class="title">
-						<div class="date">
-							<FormattedDate date={pubDate} />
-							{
-								updatedDate && (
-									<div class="last-updated-on">
-										Last updated on <FormattedDate date={updatedDate} />
-									</div>
-								)
-							}
-						</div>
-						<h1>{title}</h1>
-						<hr />
-					</div>
-					<slot />
-				</div>
-			</article>
-		</main>
-		<Footer />
-	</body>
-</html>
+    <!-- 灯箱覆盖层 -->
+    <div class="lightbox-overlay" id="lightbox">
+        <img src="" alt="" id="lightbox-img" />
+    </div>
+
+    <!-- 文章导航 -->
+    <div class="post-nav-buttons">
+        {next ? (
+            <div class="nav-button next-button">
+                <span class="button-label">⇐ 新的故事&nbsp;</span>
+                <a href={`/blog/${next.slug}`} title={next.title}>{next.title}</a>
+            </div>
+        ) : (
+            <div class="nav-button disabled">
+                <span class="button-label">⇐ 暂无更多&nbsp;</span>
+            </div>
+        )}
+        
+        {prev ? (
+            <div class="nav-button prev-button">
+                <span class="button-label">&nbsp;旧的回忆 ⇒</span>
+                <a href={`/blog/${prev.slug}`} title={prev.title}>{prev.title}</a>
+            </div>
+        ) : (
+            <div class="nav-button disabled">
+                <span class="button-label">&nbsp;没有更多 ⇒</span>
+            </div>
+        )}
+    </div>
+</BaseLayout>
+
+<script>
+    // 灯箱功能
+    document.addEventListener('DOMContentLoaded', function() {
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img') as HTMLImageElement;
+        
+        // 为文章中的图片添加灯箱功能
+        const images = document.querySelectorAll('.post-content img, .text img');
+        images.forEach(img => {
+            img.classList.add('simple-lightbox');
+            img.style.cursor = 'pointer';
+            
+            img.addEventListener('click', function() {
+                if (lightbox && lightboxImg) {
+                    lightboxImg.src = (img as HTMLImageElement).src;
+                    lightbox.style.display = 'flex';
+                }
+            });
+        });
+        
+        // 点击灯箱关闭
+        lightbox?.addEventListener('click', function() {
+            lightbox.style.display = 'none';
+        });
+    });
+</script>

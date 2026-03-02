@@ -1,0 +1,99 @@
+---
+import { AUTHOR_NAME, AUTHOR_AVATAR } from '../consts';
+
+interface Props {
+    title: string;
+    description?: string;
+    pubDate: Date;
+    updatedDate?: Date;
+    slug: string;
+    isAdvertise?: boolean;
+    position?: string;
+    positionUrl?: string;
+    isSingle?: boolean;
+    content?: string;
+}
+
+const { 
+    title, 
+    description, 
+    pubDate, 
+    updatedDate, 
+    slug, 
+    isAdvertise = false,
+    position,
+    positionUrl,
+    isSingle = false,
+    content = ''
+} = Astro.props;
+
+const formattedDate = new Intl.DateTimeFormat('zh-CN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+}).format(updatedDate || pubDate);
+
+// 智能摘要函数
+function smartExcerpt(text: string, length: number = 140): string {
+    if (!text) return '';
+    // 移除HTML标签
+    const plainText = text.replace(/<[^>]*>/g, '');
+    if (plainText.length <= length) return plainText;
+    return plainText.substring(0, length) + '...';
+}
+
+const displayContent = isSingle ? content : smartExcerpt(description || content, 140);
+---
+
+<article class="post">
+    <div class="author-avatar">
+        <img
+            alt={AUTHOR_NAME}
+            loading="lazy"
+            fetchpriority="low"
+            src={AUTHOR_AVATAR}>
+    </div>
+
+    <div class="content">
+        <div class="post-info">
+            <div class="author-name">
+                {AUTHOR_NAME}
+                {isAdvertise && (
+                    <div class="author-badge">广告</div>
+                )}
+            </div>
+            {isSingle && (
+                <div class="post-rank">#{slug}</div>
+            )}
+        </div>
+
+        <div class="text">
+            {isSingle ? (
+                <Fragment set:html={displayContent} />
+            ) : (
+                <>
+                    {displayContent}
+                    <p class="more"><a href={`/blog/${slug}`} title={title}>…全文</a></p>
+                </>
+            )}
+        </div>
+
+        <div class="post-meta">
+            <div class="post-position">
+                {position && (
+                    <>
+                        📍 
+                        {positionUrl ? (
+                            <a href={positionUrl} target="_blank" rel="noopener noreferrer">{position}</a>
+                        ) : (
+                            position
+                        )}
+                    </>
+                )}
+            </div>
+            <div class="date">
+                {updatedDate ? `更新于 ${formattedDate}` : formattedDate}
+            </div>
+        </div>
+    </div>
+</article>

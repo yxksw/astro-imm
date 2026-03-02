@@ -1,0 +1,552 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE_TITLE } from '../../consts';
+---
+
+<BaseLayout title={`文章编辑器 | ${SITE_TITLE}`}>
+    <div class="editor-container">
+        <div class="editor-header">
+            <h2>📝 文章编辑器</h2>
+            <div class="editor-actions">
+                <button id="load-posts-btn" class="btn">加载文章列表</button>
+                <button id="new-post-btn" class="btn btn-primary">新建文章</button>
+            </div>
+        </div>
+
+        <div class="editor-layout">
+            <!-- 文章列表侧边栏 -->
+            <div class="posts-sidebar" id="posts-sidebar">
+                <h3>文章列表</h3>
+                <div id="posts-list" class="posts-list">
+                    <p style="color: var(--color-text-lighter); padding: 1rem;">
+                        点击"加载文章列表"获取文章
+                    </p>
+                </div>
+            </div>
+
+            <!-- 编辑器主体 -->
+            <div class="editor-main">
+                <form id="post-form" class="post-form">
+                    <div class="form-group">
+                        <label for="post-title">标题</label>
+                        <input type="text" id="post-title" name="title" required placeholder="输入文章标题">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="post-slug">Slug (URL标识)</label>
+                            <input type="text" id="post-slug" name="slug" required placeholder="my-first-post">
+                        </div>
+                        <div class="form-group">
+                            <label for="post-date">发布日期</label>
+                            <input type="date" id="post-date" name="pubDate" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="post-description">描述</label>
+                        <input type="text" id="post-description" name="description" placeholder="文章简短描述">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="post-position">位置</label>
+                            <input type="text" id="post-position" name="position" placeholder="例如：北京">
+                        </div>
+                        <div class="form-group">
+                            <label for="post-position-url">位置链接</label>
+                            <input type="url" id="post-position-url" name="positionUrl" placeholder="https://maps.google.com/...">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group checkbox-group">
+                            <label>
+                                <input type="checkbox" id="post-istop" name="isTop">
+                                置顶文章
+                            </label>
+                        </div>
+                        <div class="form-group checkbox-group">
+                            <label>
+                                <input type="checkbox" id="post-isadvertise" name="isAdvertise">
+                                广告标记
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="post-content">内容 (Markdown)</label>
+                        <textarea id="post-content" name="content" rows="20" required placeholder="使用 Markdown 格式编写文章内容..."></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <input type="hidden" id="post-sha" name="sha">
+                        <button type="submit" class="btn btn-primary">保存文章</button>
+                        <button type="button" id="preview-btn" class="btn">预览</button>
+                        <button type="button" id="delete-btn" class="btn btn-danger" style="display: none;">删除</button>
+                    </div>
+                </form>
+
+                <!-- 预览区域 -->
+                <div id="preview-area" class="preview-area" style="display: none;">
+                    <h3>预览</h3>
+                    <div id="preview-content" class="preview-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</BaseLayout>
+
+<style>
+    .editor-container {
+        padding: 1rem 0;
+    }
+
+    .editor-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px dashed var(--color-border);
+    }
+
+    .editor-header h2 {
+        margin: 0;
+    }
+
+    .editor-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .editor-layout {
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        gap: 1.5rem;
+    }
+
+    .posts-sidebar {
+        background: var(--color-link);
+        border-radius: 8px;
+        padding: 1rem;
+        height: fit-content;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+
+    .posts-sidebar h3 {
+        margin: 0 0 1rem 0;
+        font-size: 0.9rem;
+        color: var(--color-text-lighter);
+    }
+
+    .posts-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .post-item {
+        padding: 0.5rem;
+        background: var(--color-bg);
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        transition: background 0.2s;
+    }
+
+    .post-item:hover {
+        background: var(--color-link-hover);
+    }
+
+    .post-item.active {
+        background: var(--color-link-go);
+        color: white;
+    }
+
+    .editor-main {
+        background: var(--color-link);
+        border-radius: 8px;
+        padding: 1.5rem;
+    }
+
+    .post-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .form-group label {
+        font-size: 0.8rem;
+        font-weight: bold;
+        color: var(--color-text-lighter);
+    }
+
+    .form-group input,
+    .form-group textarea {
+        padding: 0.5rem;
+        border: 1px solid var(--color-border);
+        border-radius: 4px;
+        background: var(--color-bg);
+        color: var(--color-text);
+        font-family: inherit;
+        font-size: 0.9rem;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--color-link-go);
+    }
+
+    .form-group textarea {
+        font-family: monospace;
+        resize: vertical;
+        min-height: 300px;
+    }
+
+    .checkbox-group label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+        width: auto;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 0.5rem;
+        padding-top: 1rem;
+        border-top: 1px dashed var(--color-border);
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+        border: 1px solid var(--color-border);
+        border-radius: 4px;
+        background: var(--color-button);
+        color: var(--color-text);
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+
+    .btn:hover {
+        background: var(--color-button-hover);
+    }
+
+    .btn-primary {
+        background: var(--color-link-go);
+        color: white;
+        border-color: var(--color-link-go);
+    }
+
+    .btn-primary:hover {
+        opacity: 0.9;
+    }
+
+    .btn-danger {
+        background: var(--color-badge);
+        color: white;
+        border-color: var(--color-badge);
+    }
+
+    .preview-area {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px dashed var(--color-border);
+    }
+
+    .preview-area h3 {
+        margin-bottom: 1rem;
+    }
+
+    .preview-content {
+        background: var(--color-bg);
+        padding: 1rem;
+        border-radius: 4px;
+    }
+
+    @media (max-width: 768px) {
+        .editor-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .posts-sidebar {
+            max-height: 200px;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+    // 简单的 Markdown 转 HTML
+    function markdownToHtml(markdown: string): string {
+        return markdown
+            .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+            .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+            .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+            .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+            .replace(/\*(.*)\*/gim, '<em>$1</em>')
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2">$1</a>')
+            .replace(/\n/gim, '<br>');
+    }
+
+    // 生成 frontmatter
+    function generateFrontmatter(data: any): string {
+        const frontmatter: any = {
+            title: data.title,
+            description: data.description || '',
+            pubDate: data.pubDate,
+        };
+
+        if (data.isTop) frontmatter.isTop = true;
+        if (data.isAdvertise) frontmatter.isAdvertise = true;
+        if (data.position) frontmatter.position = data.position;
+        if (data.positionUrl) frontmatter.positionUrl = data.positionUrl;
+
+        const yaml = Object.entries(frontmatter)
+            .map(([key, value]) => {
+                if (typeof value === 'string') {
+                    return `${key}: '${value.replace(/'/g, "''")}'`;
+                }
+                return `${key}: ${value}`;
+            })
+            .join('\n');
+
+        return `---\n${yaml}\n---\n\n`;
+    }
+
+    // 加载文章列表
+    async function loadPosts() {
+        try {
+            const response = await fetch('/api/github/posts');
+            const posts = await response.json();
+
+            if (posts.error) {
+                alert('加载失败: ' + posts.error);
+                return;
+            }
+
+            const listEl = document.getElementById('posts-list');
+            if (listEl) {
+                listEl.innerHTML = posts
+                    .filter((p: any) => p.name.endsWith('.md'))
+                    .map((p: any) => `
+                        <div class="post-item" data-path="${p.path}" data-sha="${p.sha}">
+                            ${p.name.replace('.md', '')}
+                        </div>
+                    `).join('');
+
+                // 添加点击事件
+                listEl.querySelectorAll('.post-item').forEach(item => {
+                    item.addEventListener('click', () => loadPost(item.dataset.path!, item.dataset.sha!));
+                });
+            }
+        } catch (error) {
+            alert('加载文章列表失败');
+            console.error(error);
+        }
+    }
+
+    // 加载单篇文章
+    async function loadPost(path: string, sha: string) {
+        try {
+            const response = await fetch(`/api/github/posts?path=${encodeURIComponent(path)}`);
+            const data = await response.json();
+
+            if (data.error) {
+                alert('加载失败: ' + data.error);
+                return;
+            }
+
+            // 解码内容
+            const content = atob(data.content);
+            
+            // 解析 frontmatter 和内容
+            const match = content.match(/^---\n([\s\S]*?)\n---\n\n([\s\S]*)$/);
+            
+            if (match) {
+                const frontmatter = match[1];
+                const body = match[2];
+
+                // 解析 frontmatter
+                const titleMatch = frontmatter.match(/title:\s*['"]?([^'"\n]+)['"]?/);
+                const descMatch = frontmatter.match(/description:\s*['"]?([^'"\n]*)['"]?/);
+                const dateMatch = frontmatter.match(/pubDate:\s*['"]?([^'"\n]+)['"]?/);
+                const isTopMatch = frontmatter.match(/isTop:\s*(true)/);
+                const isAdMatch = frontmatter.match(/isAdvertise:\s*(true)/);
+                const posMatch = frontmatter.match(/position:\s*['"]?([^'"\n]*)['"]?/);
+                const posUrlMatch = frontmatter.match(/positionUrl:\s*['"]?([^'"\n]*)['"]?/);
+
+                // 填充表单
+                (document.getElementById('post-title') as HTMLInputElement).value = titleMatch?.[1] || '';
+                (document.getElementById('post-description') as HTMLInputElement).value = descMatch?.[1] || '';
+                (document.getElementById('post-date') as HTMLInputElement).value = dateMatch?.[1] || '';
+                (document.getElementById('post-position') as HTMLInputElement).value = posMatch?.[1] || '';
+                (document.getElementById('post-position-url') as HTMLInputElement).value = posUrlMatch?.[1] || '';
+                (document.getElementById('post-istop') as HTMLInputElement).checked = !!isTopMatch;
+                (document.getElementById('post-isadvertise') as HTMLInputElement).checked = !!isAdMatch;
+                (document.getElementById('post-content') as HTMLTextAreaElement).value = body;
+                (document.getElementById('post-sha') as HTMLInputElement).value = sha;
+
+                // 从路径提取 slug
+                const slug = path.split('/').pop()?.replace('.md', '') || '';
+                (document.getElementById('post-slug') as HTMLInputElement).value = slug;
+
+                // 显示删除按钮
+                document.getElementById('delete-btn')!.style.display = 'inline-block';
+
+                // 高亮当前文章
+                document.querySelectorAll('.post-item').forEach(el => el.classList.remove('active'));
+                document.querySelector(`[data-path="${path}"]`)?.classList.add('active');
+            }
+        } catch (error) {
+            alert('加载文章失败');
+            console.error(error);
+        }
+    }
+
+    // 保存文章
+    async function savePost(e: Event) {
+        e.preventDefault();
+
+        const form = e.target as HTMLFormElement;
+        const formData = new FormData(form);
+        
+        const data = {
+            title: formData.get('title') as string,
+            slug: formData.get('slug') as string,
+            pubDate: formData.get('pubDate') as string,
+            description: formData.get('description') as string,
+            position: formData.get('position') as string,
+            positionUrl: formData.get('positionUrl') as string,
+            isTop: formData.get('isTop') === 'on',
+            isAdvertise: formData.get('isAdvertise') === 'on',
+            content: formData.get('content') as string,
+            sha: formData.get('sha') as string,
+        };
+
+        const fullContent = generateFrontmatter(data) + data.content;
+        const path = `src/content/blog/${data.slug}.md`;
+
+        try {
+            const response = await fetch('/api/github/posts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    path,
+                    content: fullContent,
+                    message: data.sha ? `Update: ${data.title}` : `Create: ${data.title}`,
+                    sha: data.sha || undefined,
+                }),
+            });
+
+            const result = await response.json();
+
+            if (result.error) {
+                alert('保存失败: ' + result.error);
+            } else {
+                alert('保存成功！');
+                (document.getElementById('post-sha') as HTMLInputElement).value = result.content.sha;
+                loadPosts(); // 刷新列表
+            }
+        } catch (error) {
+            alert('保存失败');
+            console.error(error);
+        }
+    }
+
+    // 删除文章
+    async function deletePost() {
+        const sha = (document.getElementById('post-sha') as HTMLInputElement).value;
+        const slug = (document.getElementById('post-slug') as HTMLInputElement).value;
+        
+        if (!sha || !confirm('确定要删除这篇文章吗？')) return;
+
+        try {
+            const response = await fetch('/api/github/posts', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    path: `src/content/blog/${slug}.md`,
+                    sha,
+                    message: `Delete: ${slug}`,
+                }),
+            });
+
+            const result = await response.json();
+
+            if (result.error) {
+                alert('删除失败: ' + result.error);
+            } else {
+                alert('删除成功！');
+                form.reset();
+                document.getElementById('delete-btn')!.style.display = 'none';
+                loadPosts();
+            }
+        } catch (error) {
+            alert('删除失败');
+            console.error(error);
+        }
+    }
+
+    // 预览功能
+    function previewPost() {
+        const content = (document.getElementById('post-content') as HTMLTextAreaElement).value;
+        const previewArea = document.getElementById('preview-area');
+        const previewContent = document.getElementById('preview-content');
+        
+        if (previewArea && previewContent) {
+            previewContent.innerHTML = markdownToHtml(content);
+            previewArea.style.display = 'block';
+        }
+    }
+
+    // 新建文章
+    function newPost() {
+        const form = document.getElementById('post-form') as HTMLFormElement;
+        form.reset();
+        (document.getElementById('post-date') as HTMLInputElement).value = new Date().toISOString().split('T')[0];
+        (document.getElementById('post-sha') as HTMLInputElement).value = '';
+        document.getElementById('delete-btn')!.style.display = 'none';
+        document.querySelectorAll('.post-item').forEach(el => el.classList.remove('active'));
+    }
+
+    // 事件绑定
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('post-form');
+        const loadBtn = document.getElementById('load-posts-btn');
+        const newBtn = document.getElementById('new-post-btn');
+        const previewBtn = document.getElementById('preview-btn');
+        const deleteBtn = document.getElementById('delete-btn');
+
+        form?.addEventListener('submit', savePost);
+        loadBtn?.addEventListener('click', loadPosts);
+        newBtn?.addEventListener('click', newPost);
+        previewBtn?.addEventListener('click', previewPost);
+        deleteBtn?.addEventListener('click', deletePost);
+
+        // 设置默认日期
+        (document.getElementById('post-date') as HTMLInputElement).value = new Date().toISOString().split('T')[0];
+    });
+</script>

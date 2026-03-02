@@ -1,0 +1,58 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE_TITLE } from '../consts';
+
+const posts = (await getCollection('blog')).sort(
+    (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+
+// 按年份分组
+const groupedPosts = posts.reduce((acc, post) => {
+    const year = new Date(post.data.pubDate).getFullYear();
+    if (!acc[year]) {
+        acc[year] = [];
+    }
+    acc[year].push(post);
+    return acc;
+}, {} as Record<number, typeof posts>);
+
+const years = Object.keys(groupedPosts).sort((a, b) => Number(b) - Number(a));
+---
+
+<BaseLayout title={`归档 | ${SITE_TITLE}`}>
+    <div class="moments-container">
+        {years.map(year => (
+            <div class="year-group">
+                <div style="font-weight: bold; margin: 1rem 0 0.5rem 0; color: var(--color-text-lighter);">
+                    {year}年
+                </div>
+                {groupedPosts[Number(year)].map(post => {
+                    const date = new Date(post.data.pubDate);
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    
+                    return (
+                        <div class="moments-group">
+                            <div class="moments-date">
+                                <span class="mg-day">{day}</span>
+                                <span>{month}月</span>
+                            </div>
+                            <div class="moment-body">
+                                <a href={`/blog/${post.slug}`}>
+                                    {post.data.title}
+                                </a>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        ))}
+    </div>
+    
+    {posts.length === 0 && (
+        <div class="no-more-posts">
+            还没有文章，开始写博客吧！
+        </div>
+    )}
+</BaseLayout>
