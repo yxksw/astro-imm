@@ -59,7 +59,7 @@ export const FOOTER_CONFIG = {
     beianInfo: '', // ICP备案号
     poweredBy: [
         { name: 'Astro', url: 'https://astro.build' },
-        { name: 'iMM', url: '#' },
+        { name: 'iMM', url: 'https://github.com/airinghost/typecho-theme-imm' },
     ],
 };
 
