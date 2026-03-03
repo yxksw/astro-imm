@@ -1,6 +1,6 @@
 ---
 title: '第一篇博客文章'
-description: '这是我的第一篇博客文章，欢迎来到我的博客！'
+description: '欢迎来到我的博客，这是我的第一篇文章！'
 pubDate: '2024-01-01'
 updatedDate: '2024-01-15'
 isTop: true
@@ -32,7 +32,7 @@ positionUrl: 'https://maps.google.com/?q=Beijing'
 
 ```javascript
 // 代码块
-console.log('Hello World');
+console.log('你好，世界！');
 ```
 
 ## 图片展示

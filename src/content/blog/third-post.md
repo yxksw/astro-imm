@@ -1,16 +1,118 @@
 ---
-title: 'Third post'
-description: 'Lorem ipsum dolor sit amet'
-pubDate: 'Jul 22 2022'
+title: '第三篇文章'
+description: '探索更多 Markdown 语法和博客功能'
+pubDate: '2022-07-22'
 heroImage: '../../assets/blog-placeholder-2.jpg'
 ---
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Vitae ultricies leo integer malesuada nunc vel risus commodo viverra. Adipiscing enim eu turpis egestas pretium. Euismod elementum nisi quis eleifend quam adipiscing. In hac habitasse platea dictumst vestibulum. Sagittis purus sit amet volutpat. Netus et malesuada fames ac turpis egestas. Eget magna fermentum iaculis eu non diam phasellus vestibulum lorem. Varius sit amet mattis vulputate enim. Habitasse platea dictumst quisque sagittis. Integer quis auctor elit sed vulputate mi. Dictumst quisque sagittis purus sit amet.
+欢迎来到第三篇文章！这篇文章将带你探索更多 Markdown 语法和博客的高级功能。
 
-Morbi tristique senectus et netus. Id semper risus in hendrerit gravida rutrum quisque non tellus. Habitasse platea dictumst quisque sagittis purus sit amet. Tellus molestie nunc non blandit massa. Cursus vitae congue mauris rhoncus. Accumsan tortor posuere ac ut. Fringilla urna porttitor rhoncus dolor. Elit ullamcorper dignissim cras tincidunt lobortis. In cursus turpis massa tincidunt dui ut ornare lectus. Integer feugiat scelerisque varius morbi enim nunc. Bibendum neque egestas congue quisque egestas diam. Cras ornare arcu dui vivamus arcu felis bibendum. Dignissim suspendisse in est ante in nibh mauris. Sed tempus urna et pharetra pharetra massa massa ultricies mi.
+## 链接与引用
 
-Mollis nunc sed id semper risus in. Convallis a cras semper auctor neque. Diam sit amet nisl suscipit. Lacus viverra vitae congue eu consequat ac felis donec. Egestas integer eget aliquet nibh praesent tristique magna sit amet. Eget magna fermentum iaculis eu non diam. In vitae turpis massa sed elementum. Tristique et egestas quis ipsum suspendisse ultrices. Eget lorem dolor sed viverra ipsum. Vel turpis nunc eget lorem dolor sed viverra. Posuere ac ut consequat semper viverra nam. Laoreet suspendisse interdum consectetur libero id faucibus. Diam phasellus vestibulum lorem sed risus ultricies tristique. Rhoncus dolor purus non enim praesent elementum facilisis. Ultrices tincidunt arcu non sodales neque. Tempus egestas sed sed risus pretium quam vulputate. Viverra suspendisse potenti nullam ac tortor vitae purus faucibus ornare. Fringilla urna porttitor rhoncus dolor purus non. Amet dictum sit amet justo donec enim.
+### 外部链接
 
-Mattis ullamcorper velit sed ullamcorper morbi tincidunt. Tortor posuere ac ut consequat semper viverra. Tellus mauris a diam maecenas sed enim ut sem viverra. Venenatis urna cursus eget nunc scelerisque viverra mauris in. Arcu ac tortor dignissim convallis aenean et tortor at. Curabitur gravida arcu ac tortor dignissim convallis aenean et tortor. Egestas tellus rutrum tellus pellentesque eu. Fusce ut placerat orci nulla pellentesque dignissim enim sit amet. Ut enim blandit volutpat maecenas volutpat blandit aliquam etiam. Id donec ultrices tincidunt arcu. Id cursus metus aliquam eleifend mi.
+你可以轻松添加外部链接，点击即可访问：
 
-Tempus quam pellentesque nec nam aliquam sem. Risus at ultrices mi tempus imperdiet. Id porta nibh venenatis cras sed felis eget velit. Ipsum a arcu cursus vitae. Facilisis magna etiam tempor orci eu lobortis elementum. Tincidunt dui ut ornare lectus sit. Quisque non tellus orci ac. Blandit libero volutpat sed cras. Nec tincidunt praesent semper feugiat nibh sed pulvinar proin gravida. Egestas integer eget aliquet nibh praesent tristique magna.
+- [Astro 官网](https://astro.build) - 快速、内容驱动的网站构建框架
+- [GitHub](https://github.com) - 全球最大的代码托管平台
+- [MDN Web Docs](https://developer.mozilla.org) - Web 开发者的权威文档
+
+### 内部链接
+
+链接到博客内的其他文章：
+
+- [第一篇博客文章](/blog/first-post)
+- [第二篇文章](/blog/second-post)
+
+## 高级排版
+
+### 任务列表
+
+创建可勾选的任务列表：
+
+- [x] 学习 Markdown 语法
+- [x] 搭建博客网站
+- [x] 发布第一篇文章
+- [ ] 优化网站性能
+- [ ] 添加更多功能
+
+### 水平分割线
+
+使用分割线来分隔不同章节：
+
+---
+
+### 脚注
+
+你可以添加脚注来补充说明[^1]。
+
+[^1]: 这是一个脚注示例。
+
+## 代码高亮
+
+支持多种编程语言的语法高亮：
+
+### Python
+
+```python
+def fibonacci(n):
+    if n <= 1:
+        return n
+    else:
+        return fibonacci(n-1) + fibonacci(n-2)
+
+# 打印前10个斐波那契数
+for i in range(10):
+    print(f"F({i}) = {fibonacci(i)}")
+```
+
+### HTML
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>示例页面</title>
+</head>
+<body>
+    <h1>欢迎来到我的博客</h1>
+    <p>这是一个示例段落。</p>
+</body>
+</html>
+```
+
+## 数学公式
+
+虽然标准 Markdown 不支持数学公式，但你可以使用 LaTeX 语法：
+
+行内公式：$E = mc^2$
+
+块级公式：
+
+$$
+\sum_{i=1}^{n} x_i = x_1 + x_2 + \cdots + x_n
+$$
+
+## 提示框
+
+使用引用块创建不同类型的提示：
+
+> 💡 **提示**
+> 这是一个有用的提示信息。
+
+> ⚠️ **注意**
+> 这是一个需要注意的警告信息。
+
+> 🚨 **重要**
+> 这是一个重要的提醒。
+
+## 总结
+
+通过这三篇文章，你已经了解了博客的基本功能：
+
+1. **第一篇** - 博客介绍和基本功能
+2. **第二篇** - 文本样式和代码展示
+3. **第三篇** - 链接、任务列表和高级排版
+
+现在你可以开始创作自己的文章了！

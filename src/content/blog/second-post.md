@@ -1,16 +1,84 @@
 ---
-title: 'Second post'
-description: 'Lorem ipsum dolor sit amet'
-pubDate: 'Jul 15 2022'
+title: '第二篇文章'
+description: '这是一篇示例文章，展示博客的基本功能'
+pubDate: '2022-07-15'
 heroImage: '../../assets/blog-placeholder-4.jpg'
 ---
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Vitae ultricies leo integer malesuada nunc vel risus commodo viverra. Adipiscing enim eu turpis egestas pretium. Euismod elementum nisi quis eleifend quam adipiscing. In hac habitasse platea dictumst vestibulum. Sagittis purus sit amet volutpat. Netus et malesuada fames ac turpis egestas. Eget magna fermentum iaculis eu non diam phasellus vestibulum lorem. Varius sit amet mattis vulputate enim. Habitasse platea dictumst quisque sagittis. Integer quis auctor elit sed vulputate mi. Dictumst quisque sagittis purus sit amet.
+欢迎来到第二篇文章！这里展示了一些博客的基本功能和样式。
 
-Morbi tristique senectus et netus. Id semper risus in hendrerit gravida rutrum quisque non tellus. Habitasse platea dictumst quisque sagittis purus sit amet. Tellus molestie nunc non blandit massa. Cursus vitae congue mauris rhoncus. Accumsan tortor posuere ac ut. Fringilla urna porttitor rhoncus dolor. Elit ullamcorper dignissim cras tincidunt lobortis. In cursus turpis massa tincidunt dui ut ornare lectus. Integer feugiat scelerisque varius morbi enim nunc. Bibendum neque egestas congue quisque egestas diam. Cras ornare arcu dui vivamus arcu felis bibendum. Dignissim suspendisse in est ante in nibh mauris. Sed tempus urna et pharetra pharetra massa massa ultricies mi.
+## 文章排版
 
-Mollis nunc sed id semper risus in. Convallis a cras semper auctor neque. Diam sit amet nisl suscipit. Lacus viverra vitae congue eu consequat ac felis donec. Egestas integer eget aliquet nibh praesent tristique magna sit amet. Eget magna fermentum iaculis eu non diam. In vitae turpis massa sed elementum. Tristique et egestas quis ipsum suspendisse ultrices. Eget lorem dolor sed viverra ipsum. Vel turpis nunc eget lorem dolor sed viverra. Posuere ac ut consequat semper viverra nam. Laoreet suspendisse interdum consectetur libero id faucibus. Diam phasellus vestibulum lorem sed risus ultricies tristique. Rhoncus dolor purus non enim praesent elementum facilisis. Ultrices tincidunt arcu non sodales neque. Tempus egestas sed sed risus pretium quam vulputate. Viverra suspendisse potenti nullam ac tortor vitae purus faucibus ornare. Fringilla urna porttitor rhoncus dolor purus non. Amet dictum sit amet justo donec enim.
+博客支持丰富的排版功能，让你的文章更加美观易读。以下是一些常用的排版元素：
 
-Mattis ullamcorper velit sed ullamcorper morbi tincidunt. Tortor posuere ac ut consequat semper viverra. Tellus mauris a diam maecenas sed enim ut sem viverra. Venenatis urna cursus eget nunc scelerisque viverra mauris in. Arcu ac tortor dignissim convallis aenean et tortor at. Curabitur gravida arcu ac tortor dignissim convallis aenean et tortor. Egestas tellus rutrum tellus pellentesque eu. Fusce ut placerat orci nulla pellentesque dignissim enim sit amet. Ut enim blandit volutpat maecenas volutpat blandit aliquam etiam. Id donec ultrices tincidunt arcu. Id cursus metus aliquam eleifend mi.
+### 文本样式
 
-Tempus quam pellentesque nec nam aliquam sem. Risus at ultrices mi tempus imperdiet. Id porta nibh venenatis cras sed felis eget velit. Ipsum a arcu cursus vitae. Facilisis magna etiam tempor orci eu lobortis elementum. Tincidunt dui ut ornare lectus sit. Quisque non tellus orci ac. Blandit libero volutpat sed cras. Nec tincidunt praesent semper feugiat nibh sed pulvinar proin gravida. Egestas integer eget aliquet nibh praesent tristique magna.
+你可以使用各种文本样式来突出重点：
+
+- **粗体文本** - 用于强调重要内容
+- *斜体文本* - 用于表示特殊含义
+- ~~删除线~~ - 用于表示过时内容
+- `行内代码` - 用于表示代码片段
+
+### 列表演示
+
+有序列表：
+1. 第一步：准备工作
+2. 第二步：开始编写
+3. 第三步：发布文章
+
+无序列表：
+- 支持深色模式
+- 响应式设计
+- 流畅的动画效果
+
+### 引用块
+
+> 这是一段引用文本。可以用来引用名人名言或者重要的观点。
+>
+> 支持多行引用内容。
+
+## 代码展示
+
+博客支持语法高亮，让代码更易读：
+
+```javascript
+// JavaScript 示例
+function greet(name) {
+    return `你好，${name}！`;
+}
+
+console.log(greet('世界'));
+```
+
+```css
+/* CSS 示例 */
+.button {
+    background: #07C160;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+```
+
+## 图片展示
+
+文章支持插入图片，点击图片可以查看大图：
+
+![示例图片](/blog-placeholder-4.jpg)
+
+## 表格展示
+
+| 功能 | 状态 | 说明 |
+|------|------|------|
+| Markdown | ✅ | 完整支持 |
+| 深色模式 | ✅ | 自动切换 |
+| 响应式 | ✅ | 适配移动端 |
+| 搜索 | ✅ | 全文搜索 |
+
+## 总结
+
+这篇示例文章展示了博客的各种功能。你可以使用 Markdown 语法编写丰富的内容，包括文本样式、代码块、图片、表格等。
+
+开始创作你的下一篇文章吧！
