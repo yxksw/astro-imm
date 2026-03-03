@@ -15,7 +15,8 @@ export default defineConfig({
     // Markdown配置
     markdown: {
         shikiConfig: {
-            theme: 'github-light',
+            // 使用单一主题，通过 CSS 变量适配深色模式
+            theme: 'github-dark',
             wrap: true,
         },
     },

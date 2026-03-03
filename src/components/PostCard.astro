@@ -12,6 +12,7 @@ interface Props {
     positionUrl?: string;
     isSingle?: boolean;
     content?: string;
+    rank?: number;
 }
 
 const { 
@@ -24,7 +25,8 @@ const {
     position,
     positionUrl,
     isSingle = false,
-    content = ''
+    content = '',
+    rank
 } = Astro.props;
 
 const formattedDate = new Intl.DateTimeFormat('zh-CN', {
@@ -42,7 +44,7 @@ function smartExcerpt(text: string, length: number = 140): string {
     return plainText.substring(0, length) + '...';
 }
 
-const displayContent = isSingle ? content : smartExcerpt(description || content, 140);
+const displayContent = smartExcerpt(description || content, 140);
 ---
 
 <article class="post">
@@ -62,25 +64,22 @@ const displayContent = isSingle ? content : smartExcerpt(description || content,
                     <div class="author-badge">广告</div>
                 )}
             </div>
-            {isSingle && (
-                <div class="post-rank">#{slug}</div>
+            {isSingle && rank && (
+                <div class="post-rank">#{rank}</div>
             )}
         </div>
 
-        <div class="text">
-            {isSingle ? (
-                <Fragment set:html={displayContent} />
-            ) : (
-                <>
-                    {displayContent}
-                    <p class="more"><a href={`/blog/${slug}`} title={title}>…全文</a></p>
-                </>
-            )}
-        </div>
+        <!-- 只在列表页显示摘要，详情页不显示 -->
+        {!isSingle && (
+            <div class="text">
+                {displayContent}
+                <p class="more"><a href={`/blog/${slug}`} title={title}>…全文</a></p>
+            </div>
+        )}
 
         <div class="post-meta">
             <div class="post-position">
-                {position && (
+                {isSingle && position && (
                     <>
                         📍 
                         {positionUrl ? (

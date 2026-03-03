@@ -1,40 +1,89 @@
 ---
-import { SITE_TITLE, HEADER_CONFIG } from '../consts';
+import { SITE_TITLE, SITE_DESCRIPTION, HEADER_CONFIG } from '../consts';
 
 interface Props {
     isHome?: boolean;
 }
 
 const { isHome = false } = Astro.props;
+
+// 背景图配置
+const headerBgImage = HEADER_CONFIG.headerBgImage || '';
+const headerBgVideo = HEADER_CONFIG.headerBgVideo || '';
+
+// 颜色配置
+const topTitleColor = HEADER_CONFIG.topTitleColor || '#ffffff';
+const topDescriptionColor = HEADER_CONFIG.topDescriptionColor || '#ffffff';
+const backButtonColor = HEADER_CONFIG.backButtonColor || '#ffffff';
+const settingButtonColor = HEADER_CONFIG.settingButtonColor || '#ffffff';
 ---
 
 {HEADER_CONFIG.showTopBar && (
     <>
-        <div class="navbar bg">
-            <div class="navbar-content">
-                {HEADER_CONFIG.logoUrl && (
-                    <a class="site-logo" href={HEADER_CONFIG.logoLink || '/'}>
-                        <img alt={SITE_TITLE} src={HEADER_CONFIG.logoUrl} style={`width: ${HEADER_CONFIG.logoSize}; height: ${HEADER_CONFIG.logoSize};`} />
+        <!-- 顶部导航栏 -->
+        <section class="top-container" id="top-container">
+            <div class="top-container-left">
+                <!-- 返回首页按钮 -->
+                {!isHome && (
+                    <a href="/" class="tc-back" title="返回首页" style={`color: ${backButtonColor};`}>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                        </svg>
                     </a>
                 )}
-                {HEADER_CONFIG.topTitle && (
-                    <div class="site-name" style={HEADER_CONFIG.topTitleDark ? 'color: var(--color-text-fixed);' : ''}>
-                        {HEADER_CONFIG.topTitle}
-                    </div>
-                )}
             </div>
-        </div>
+            <div class="top-container-right">
+                <!-- 设置图标 - 点击跳转到编辑页面 -->
+                <a href="/admin/editor" class="tc-setting" title="编辑文章" style={`color: ${settingButtonColor};`}>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 0 1 0 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.212 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.519 6.519 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.296-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 0 1 0-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 0 1-.26-1.43l1.296-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                    </svg>
+                </a>
+            </div>
+        </section>
 
-        <div class="navbar">
-            <div class="site-description">
-                {HEADER_CONFIG.topDescription && HEADER_CONFIG.topDescription}
+        <!-- 头部横幅 -->
+        <section class="header-container" style={headerBgImage ? `background-image: url(${headerBgImage});` : headerBgVideo ? '' : 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'}>
+            {headerBgVideo && (
+                <video src={headerBgVideo} autoplay muted loop playsinline></video>
+            )}
+
+            <div class="header-info">
+                <div class="header-user">
+                    <a href={HEADER_CONFIG.logoLink || '/'} class="header-site-title" style={`color: ${topTitleColor};`}>
+                        <span>{HEADER_CONFIG.topTitle || SITE_TITLE}</span>
+                    </a>
+                    {HEADER_CONFIG.logoUrl ? (
+                        <a href={HEADER_CONFIG.logoLink || '/'} class="header-avatar-link">
+                            <img src={HEADER_CONFIG.logoUrl} alt="logo"/>
+                        </a>
+                    ) : (
+                        <div class="header-avatar-nolink">
+                            <div class="header-logo-placeholder">Logo</div>
+                        </div>
+                    )}
+                </div>
+                <div class="header-description" style={`color: ${topDescriptionColor};`}>
+                    {HEADER_CONFIG.topDescription || SITE_DESCRIPTION}
+                </div>
             </div>
-        </div>
+        </section>
     </>
 )}
 
-{!isHome && (
-    <div class="back-button" title="返回">
-        <a href="/" class="back-link">返回首页</a>
-    </div>
-)}
+<script>
+    // 顶部导航栏滚动效果
+    document.addEventListener('DOMContentLoaded', function() {
+        const topContainer = document.getElementById('top-container');
+        if (topContainer) {
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) {
+                    topContainer.classList.add('scrolled');
+                } else {
+                    topContainer.classList.remove('scrolled');
+                }
+            });
+        }
+    });
+</script>

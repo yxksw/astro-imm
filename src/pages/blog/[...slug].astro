@@ -10,12 +10,16 @@ export async function getStaticPaths() {
         const prev = index < sortedPosts.length - 1 ? sortedPosts[index + 1] : null;
         const next = index > 0 ? sortedPosts[index - 1] : null;
         
+        // 计算文章排名（按发布时间倒序）
+        const rank = index + 1;
+        
         return {
             params: { slug: post.slug },
             props: {
                 ...post,
                 prev: prev ? { slug: prev.slug, title: prev.data.title } : null,
                 next: next ? { slug: next.slug, title: next.data.title } : null,
+                rank,
             },
         };
     });
@@ -24,12 +28,13 @@ export async function getStaticPaths() {
 type Props = CollectionEntry<'blog'> & {
     prev: { slug: string; title: string } | null;
     next: { slug: string; title: string } | null;
+    rank: number;
 };
 
 const post = Astro.props;
 const { Content } = await post.render();
 ---
 
-<BlogPost {...post.data} slug={post.slug} prev={post.prev} next={post.next}>
+<BlogPost {...post.data} slug={post.slug} prev={post.prev} next={post.next} rank={post.rank}>
     <Content />
 </BlogPost>

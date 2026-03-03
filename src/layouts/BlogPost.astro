@@ -8,6 +8,7 @@ type Props = CollectionEntry<'blog'>['data'] & {
     slug: string;
     prev?: { slug: string; title: string } | null;
     next?: { slug: string; title: string } | null;
+    rank?: number;
 };
 
 const { 
@@ -20,14 +21,19 @@ const {
     position,
     positionUrl,
     prev,
-    next
+    next,
+    rank
 } = Astro.props;
-
-// 获取文章内容
-const { Content } = await Astro.props.render?.() || { Content: null };
 ---
 
 <BaseLayout title={`${title} | ${SITE_TITLE}`} description={description}>
+    <!-- 编辑按钮 - 固定在右上角 -->
+    <a href={`/admin/editor?slug=${slug}`} class="edit-post-btn" title="编辑文章">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+        </svg>
+    </a>
+
     <PostCard 
         title={title}
         description={description}
@@ -38,14 +44,13 @@ const { Content } = await Astro.props.render?.() || { Content: null };
         position={position}
         positionUrl={positionUrl}
         isSingle={true}
-        content={Content ? '' : description || ''}
+        rank={rank}
     />
-    
-    {Content && (
-        <div class="post-content text">
-            <Content />
-        </div>
-    )}
+
+    <!-- 文章内容 -->
+    <div class="post-content text">
+        <slot />
+    </div>
 
     <!-- 灯箱覆盖层 -->
     <div class="lightbox-overlay" id="lightbox">
@@ -76,31 +81,142 @@ const { Content } = await Astro.props.render?.() || { Content: null };
             </div>
         )}
     </div>
+
+    <!-- Giscus 评论区域 -->
+    <div class="giscus-container">
+        <div class="giscus-wrapper">
+            <script src="https://giscus.app/client.js"
+                data-repo="yxksw/astro-imm"
+                data-repo-id="R_kgDORchU3w"
+                data-category="Announcements"
+                data-category-id="DIC_kwDORchU384C3j9h"
+                data-mapping="pathname"
+                data-strict="1"
+                data-reactions-enabled="1"
+                data-emit-metadata="0"
+                data-input-position="top"
+                data-theme="preferred_color_scheme"
+                data-lang="zh-CN"
+                data-loading="lazy"
+                crossorigin="anonymous"
+                async>
+            </script>
+        </div>
+    </div>
 </BaseLayout>
+
+<style>
+    /* 编辑按钮样式 */
+    .edit-post-btn {
+        position: fixed;
+        top: 70px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--color-link-go, #07C160);
+        color: white;
+        border-radius: 50%;
+        text-decoration: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        z-index: 50;
+    }
+
+    .edit-post-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    @media (max-width: 768px) {
+        .edit-post-btn {
+            top: auto;
+            bottom: 80px;
+            left: 15px;
+            right: auto;
+            width: 48px;
+            height: 48px;
+        }
+
+        .edit-post-btn svg {
+            width: 22px;
+            height: 22px;
+        }
+    }
+
+    /* Giscus 评论区域样式 */
+    .giscus-container {
+        width: 100%;
+        max-width: 640px;
+        margin: 2rem auto 0;
+        padding: 0 1rem;
+    }
+
+    .giscus-wrapper {
+        background: var(--color-bg);
+        border-radius: 8px;
+        padding: 1rem;
+    }
+
+    /* 深色模式适配 */
+    @media (prefers-color-scheme: dark) {
+        .giscus-wrapper {
+            background: var(--color-bg);
+        }
+    }
+</style>
 
 <script>
     // 灯箱功能
     document.addEventListener('DOMContentLoaded', function() {
-        const lightbox = document.getElementById('lightbox');
-        const lightboxImg = document.getElementById('lightbox-img') as HTMLImageElement;
-        
+        const lightbox = document.getElementById('lightbox') as HTMLElement | null;
+        const lightboxImg = document.getElementById('lightbox-img') as HTMLImageElement | null;
+
         // 为文章中的图片添加灯箱功能
         const images = document.querySelectorAll('.post-content img, .text img');
         images.forEach(img => {
-            img.classList.add('simple-lightbox');
-            img.style.cursor = 'pointer';
-            
-            img.addEventListener('click', function() {
+            const imgElement = img as HTMLImageElement;
+            imgElement.classList.add('simple-lightbox');
+            imgElement.style.cursor = 'pointer';
+
+            imgElement.addEventListener('click', function() {
                 if (lightbox && lightboxImg) {
-                    lightboxImg.src = (img as HTMLImageElement).src;
+                    lightboxImg.src = imgElement.src;
                     lightbox.style.display = 'flex';
                 }
             });
         });
-        
+
         // 点击灯箱关闭
         lightbox?.addEventListener('click', function() {
             lightbox.style.display = 'none';
         });
+    });
+
+    // Giscus 主题切换
+    function updateGiscusTheme() {
+        const iframe = document.querySelector('iframe.giscus-frame') as HTMLIFrameElement | null;
+        if (iframe && iframe.contentWindow) {
+            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = isDark ? 'dark' : 'light';
+            iframe.contentWindow.postMessage({
+                giscus: {
+                    setConfig: {
+                        theme: theme
+                    }
+                }
+            }, 'https://giscus.app');
+        }
+    }
+
+    // 监听系统主题变化
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateGiscusTheme);
+
+    // 页面加载完成后更新一次主题
+    document.addEventListener('DOMContentLoaded', function() {
+        // 等待 Giscus iframe 加载完成
+        setTimeout(updateGiscusTheme, 2000);
     });
 </script>

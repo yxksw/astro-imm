@@ -2,7 +2,7 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PostCard from '../components/PostCard.astro';
-import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+import { SITE_TITLE, SITE_DESCRIPTION, NAV_LINKS } from '../consts';
 
 // 获取所有博客文章，按日期排序
 const posts = (await getCollection('blog')).sort(
@@ -16,7 +16,46 @@ const allPosts = [...topPosts, ...normalPosts];
 ---
 
 <BaseLayout title={SITE_TITLE} description={SITE_DESCRIPTION} isHome={true}>
-    {allPosts.map((post, index) => (
+    <!-- 置顶文章/欢迎语 -->
+    {topPosts.length > 0 && topPosts.map(post => (
+        <article class="post">
+            <div class="author-avatar">
+                <img
+                    alt="异飨客"
+                    loading="lazy"
+                    fetchpriority="low"
+                    src="https://cdn.jsdmirror.com/gh/zsxcoder/github-img@main/img/yxk-avatar.avif">
+            </div>
+            <div class="content">
+                <div class="post-info">
+                    <div class="author-name">
+                        异飨客
+                        <div class="author-badge">置顶</div>
+                    </div>
+                </div>
+                <div class="text">
+                    {post.data.description || post.body?.substring(0, 200)}
+                    <p class="more">
+                        {NAV_LINKS.map((link, index) => (
+                            <>
+                                <a href={link.href}>{link.text}</a>
+                                {index < NAV_LINKS.length - 1 ? ' | ' : ''}
+                            </>
+                        ))}
+                    </p>
+                </div>
+                <div class="post-meta">
+                    <div class="post-position"></div>
+                    <div class="date">
+                        最近一次构建于 {new Date().toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(/\//g, '/')}
+                    </div>
+                </div>
+            </div>
+        </article>
+    ))}
+
+    <!-- 普通文章列表 -->
+    {normalPosts.map((post, index) => (
         <PostCard 
             title={post.data.title}
             description={post.data.description}

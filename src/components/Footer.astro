@@ -1,36 +1,34 @@
 ---
-import { FOOTER_CONFIG, SITE_TITLE } from '../consts';
+import { FOOTER_CONFIG, HEADER_CONFIG } from '../consts';
 ---
 
-<div class="search-floating" title="搜索" id="search-trigger">
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<!-- 搜索按钮 -->
+<div class="search-floating" id="search-trigger" title="搜索">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
     </svg>
-
-    <div class="search-popup" id="search-popup">
-        <form method="get" action="/search" role="search">
-            <div class="search-close-btn" id="search-close">&times;</div>
-            <input class="text" name="q" placeholder="输入关键词搜索…" autocomplete="off" />
-            <button class="submit" type="submit">搜索</button>
-        </form>
-    </div>
 </div>
 
-<div id="back-to-top" title="返回顶部">
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-        <path d="M16 5 L8 12 L16 19"
-            stroke="currentColor"
-            stroke-width="2"
-            fill="none"
-            stroke-linecap="round"
-            transform="rotate(90, 12, 12)" />
+<!-- 搜索弹出层 -->
+<div class="search-popup" id="search-popup">
+    <form method="get" action="/search" role="search" id="search-form">
+        <div class="search-close-btn" id="search-close">&times;</div>
+        <input class="text" name="q" placeholder="输入关键词搜索…" autocomplete="off" id="search-input" />
+        <button class="submit" type="submit">搜索</button>
+    </form>
+</div>
+
+<!-- 回到顶部按钮 -->
+<div class="back-to-top" id="back-to-top" title="返回顶部">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="18 15 12 9 6 15"></polyline>
     </svg>
 </div>
 
 <footer>
     <div class="copyright">
-        &copy; {FOOTER_CONFIG.copyrightStart && `${FOOTER_CONFIG.copyrightStart} - `}{new Date().getFullYear()}. 
+        &copy; {FOOTER_CONFIG.copyrightStart && `${FOOTER_CONFIG.copyrightStart} - `}{new Date().getFullYear()}.
         {FOOTER_CONFIG.copyrightOwner && `${FOOTER_CONFIG.copyrightOwner}. `}
         由 {FOOTER_CONFIG.poweredBy.map((item, index) => (
             <>
@@ -48,75 +46,80 @@ import { FOOTER_CONFIG, SITE_TITLE } from '../consts';
 </footer>
 
 <script>
-    // 搜索功能
     document.addEventListener('DOMContentLoaded', function() {
+        // 搜索功能
         const searchTrigger = document.getElementById('search-trigger');
         const searchPopup = document.getElementById('search-popup');
         const searchClose = document.getElementById('search-close');
-        const searchInput = document.querySelector('.search-popup input[name="q"]');
+        const searchInput = document.getElementById('search-input');
+        const searchForm = document.getElementById('search-form');
 
+        // 打开搜索弹窗
         if (searchTrigger && searchPopup) {
             searchTrigger.addEventListener('click', function(e) {
-                if (e.target === searchTrigger || e.target.tagName === 'svg' ||
-                    e.target.tagName === 'circle' || e.target.tagName === 'line') {
-                    searchPopup.style.display = 'flex';
-                    setTimeout(() => {
-                        if (searchInput) searchInput.focus();
-                    }, 100);
-                }
-            });
-
-            searchClose?.addEventListener('click', function(e) {
+                e.preventDefault();
                 e.stopPropagation();
-                searchPopup.style.display = 'none';
-            });
-
-            searchPopup.addEventListener('click', function(e) {
-                if (e.target === searchPopup) {
-                    searchPopup.style.display = 'none';
-                }
-            });
-
-            const searchForm = document.querySelector('.search-popup form');
-            searchForm?.addEventListener('click', function(e) {
-                e.stopPropagation();
-            });
-
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && searchPopup.style.display === 'flex') {
-                    searchPopup.style.display = 'none';
+                searchPopup.style.display = 'flex';
+                document.body.style.overflow = 'hidden'; // 禁止背景滚动
+                if (searchInput) {
+                    setTimeout(() => searchInput.focus(), 100);
                 }
             });
         }
 
-        // 返回顶部功能
+        // 关闭搜索弹窗
+        function closeSearchPopup() {
+            if (searchPopup) {
+                searchPopup.style.display = 'none';
+                document.body.style.overflow = ''; // 恢复背景滚动
+            }
+        }
+
+        // 点击关闭按钮
+        if (searchClose) {
+            searchClose.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                closeSearchPopup();
+            });
+        }
+
+        // 点击弹出层背景关闭
+        if (searchPopup) {
+            searchPopup.addEventListener('click', function(e) {
+                if (e.target === searchPopup) {
+                    closeSearchPopup();
+                }
+            });
+        }
+
+        // 阻止表单点击事件冒泡
+        if (searchForm) {
+            searchForm.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        }
+
+        // ESC键关闭
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && searchPopup && searchPopup.style.display === 'flex') {
+                closeSearchPopup();
+            }
+        });
+
+        // 回到顶部功能
         const backToTop = document.getElementById('back-to-top');
         if (backToTop) {
             window.addEventListener('scroll', function() {
-                if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
-                    backToTop.style.display = 'block';
+                if (window.scrollY > 100) {
+                    backToTop.classList.add('show');
                 } else {
-                    backToTop.style.display = 'none';
+                    backToTop.classList.remove('show');
                 }
             });
 
             backToTop.addEventListener('click', function() {
-                document.body.scrollTop = 0;
-                document.documentElement.scrollTop = 0;
-            });
-        }
-
-        // 返回按钮滚动隐藏
-        const navbar = document.querySelector('.navbar-content');
-        const backButton = document.querySelector('.back-button');
-        if (navbar && backButton) {
-            const navbarHeight = navbar.offsetHeight;
-            window.addEventListener('scroll', function() {
-                if (window.scrollY > navbarHeight) {
-                    document.body.classList.add('scrolled');
-                } else {
-                    document.body.classList.remove('scrolled');
-                }
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             });
         }
     });

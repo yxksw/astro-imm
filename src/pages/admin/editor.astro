@@ -1,552 +1,652 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
 import { SITE_TITLE } from '../../consts';
+import { getCollection } from 'astro:content';
+
+// 在构建时获取所有文章数据
+let allPosts: any[] = [];
+try {
+    allPosts = await getCollection('blog');
+} catch (e) {
+    console.error('Failed to load posts:', e);
+}
+
+// 序列化文章数据供客户端使用
+const postsData = allPosts.map(p => ({
+    slug: p.slug,
+    title: p.data.title,
+    description: p.data.description,
+    pubDate: p.data.pubDate,
+    position: p.data.position,
+    positionUrl: p.data.positionUrl,
+    isTop: p.data.isTop,
+    isAdvertise: p.data.isAdvertise,
+    body: p.body
+}));
 ---
 
-<BaseLayout title={`文章编辑器 | ${SITE_TITLE}`}>
-    <div class="editor-container">
-        <div class="editor-header">
-            <h2>📝 文章编辑器</h2>
-            <div class="editor-actions">
-                <button id="load-posts-btn" class="btn">加载文章列表</button>
-                <button id="new-post-btn" class="btn btn-primary">新建文章</button>
-            </div>
-        </div>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章编辑器 | {SITE_TITLE}</title>
+    <style>
+        /* ========================================
+           CSS 变量
+           ======================================== */
+        :root {
+            --main-background: #ffffff;
+            --body-background: #f0f0f0;
+            --primary-background: #F7F7F7;
+            --primary-background-hover: #DEDEDE;
+            --text-color: #333333;
+            --text-sub-color: #555555;
+            --line: rgb(243 244 246 / 1);
+            --link: #576b95;
+            --green: rgb(7 193 96);
+        }
 
-        <div class="editor-layout">
-            <!-- 文章列表侧边栏 -->
-            <div class="posts-sidebar" id="posts-sidebar">
-                <h3>文章列表</h3>
-                <div id="posts-list" class="posts-list">
-                    <p style="color: var(--color-text-lighter); padding: 1rem;">
-                        点击"加载文章列表"获取文章
-                    </p>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --main-background: #262626;
+                --body-background: #181818;
+                --primary-background: #323232;
+                --primary-background-hover: #434343;
+                --text-color: #aaaaaa;
+                --text-sub-color: #888;
+                --line: #333333;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--body-background);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* ========================================
+           顶部栏
+           ======================================== */
+        .edit-top-bar {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 576px;
+            height: 56px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            background: var(--main-background);
+            border-bottom: 1px solid var(--line);
+            z-index: 100;
+        }
+
+        .edit-back-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+        }
+
+        .edit-back-btn:hover {
+            background: var(--primary-background);
+        }
+
+        .edit-publish-btn {
+            padding: 6px 16px;
+            background: #07C160;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .edit-publish-btn:hover {
+            background: #06AD56;
+        }
+
+        .edit-publish-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* ========================================
+           主容器
+           ======================================== */
+        .edit-container {
+            max-width: 576px;
+            margin: 0 auto;
+            padding-top: 56px;
+            min-height: 100vh;
+            background: var(--main-background);
+        }
+
+        /* ========================================
+           内容输入区
+           ======================================== */
+        .edit-content-area {
+            width: 100%;
+            padding: 15px;
+        }
+
+        .edit-content-area input[type="text"] {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-color);
+            background: transparent;
+            margin-bottom: 10px;
+            font-family: inherit;
+        }
+
+        .edit-content-area input[type="text"]::placeholder {
+            color: #b2b2b2;
+        }
+
+        .edit-content-area textarea {
+            width: 100%;
+            min-height: 150px;
+            border: none;
+            outline: none;
+            resize: none;
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: transparent;
+            font-family: inherit;
+        }
+
+        .edit-content-area textarea::placeholder {
+            color: #b2b2b2;
+        }
+
+        /* ========================================
+           功能选项区
+           ======================================== */
+        .edit-options {
+            width: 100%;
+            border-top: 8px solid var(--body-background);
+        }
+
+        .edit-option-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 15px;
+            border-bottom: 1px solid var(--line);
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .edit-option-item:hover {
+            background: var(--primary-background);
+        }
+
+        .edit-option-item:last-child {
+            border-bottom: none;
+        }
+
+        .option-icon {
+            width: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            color: var(--text-sub-color);
+            margin-right: 10px;
+        }
+
+        .option-content {
+            flex: 1;
+        }
+
+        .option-label {
+            font-size: 15px;
+            color: var(--text-color);
+        }
+
+        .option-value {
+            font-size: 14px;
+            color: var(--text-sub-color);
+            margin-right: 8px;
+        }
+
+        .option-arrow {
+            color: var(--text-sub-color);
+        }
+
+        .option-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 15px;
+            color: var(--text-color);
+            background: transparent;
+            font-family: inherit;
+        }
+
+        .option-input::placeholder {
+            color: #b2b2b2;
+        }
+
+        /* 开关样式 */
+        .option-switch {
+            position: relative;
+            width: 50px;
+            height: 28px;
+        }
+
+        .option-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .3s;
+            border-radius: 28px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #07C160;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        /* 深色模式开关样式 */
+        @media (prefers-color-scheme: dark) {
+            .slider {
+                background-color: #555;
+            }
+
+            .slider:before {
+                background-color: #ddd;
+            }
+
+            input:checked + .slider {
+                background-color: #07C160;
+            }
+
+            input:checked + .slider:before {
+                background-color: white;
+            }
+        }
+
+        /* 展开的面板 */
+        .edit-panel {
+            padding: 15px;
+            background: var(--primary-background);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .edit-panel input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--line);
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 10px;
+            background: var(--main-background);
+            color: var(--text-color);
+            font-family: inherit;
+        }
+
+        .edit-panel input:focus {
+            outline: none;
+            border-color: #07C160;
+        }
+
+        /* 日期选择器深色模式适配 */
+        input[type="date"].option-input {
+            background-color: var(--main-background);
+            color: var(--text-color);
+            border: none;
+            padding: 0;
+            font-family: inherit;
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.4);
+            cursor: pointer;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            input[type="date"]::-webkit-calendar-picker-indicator {
+                filter: invert(0.7);
+            }
+        }
+
+        /* ========================================
+           状态提示
+           ======================================== */
+        .edit-status {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 14px;
+            z-index: 200;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .edit-status.show {
+            opacity: 1;
+        }
+
+        /* ========================================
+           隐藏的元素
+           ======================================== */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部栏 -->
+    <section class="edit-top-bar">
+        <div class="edit-top-left">
+            <button type="button" class="edit-back-btn" onclick="history.back()">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="20" height="20">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                </svg>
+            </button>
+        </div>
+        <div class="edit-top-right">
+            <button type="button" class="edit-publish-btn" id="publishBtn">发表</button>
+        </div>
+    </section>
+
+    <section class="edit-container">
+        <form id="editForm">
+            <!-- 内容输入区 -->
+            <div class="edit-content-area">
+                <input type="text" id="postTitle" placeholder="标题" value="">
+                <textarea id="postContent" placeholder="这一刻的想法..." rows="6"></textarea>
+            </div>
+
+            <!-- 功能选项区 -->
+            <div class="edit-options">
+                <!-- 所在位置 -->
+                <div class="edit-option-item" onclick="togglePanel('locationPanel')">
+                    <div class="option-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="22" height="22">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                        </svg>
+                    </div>
+                    <div class="option-content">
+                        <span class="option-label" id="locationLabel">所在位置</span>
+                    </div>
+                    <div class="option-arrow">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="16" height="16">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- 位置面板 -->
+                <div id="locationPanel" class="edit-panel hidden">
+                    <input type="text" id="postPosition" placeholder="输入位置名称">
+                    <input type="url" id="postPositionUrl" placeholder="输入跳转地址(选填)">
+                </div>
+
+                <!-- 日期 -->
+                <div class="edit-option-item">
+                    <div class="option-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="22" height="22">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+                        </svg>
+                    </div>
+                    <div class="option-content">
+                        <input type="date" id="postDate" class="option-input" style="flex: 1;">
+                    </div>
+                </div>
+
+                <!-- 置顶文章 -->
+                <div class="edit-option-item">
+                    <div class="option-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="22" height="22">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18a3.75 3.75 0 0 0 .495-7.468 5.99 5.99 0 0 0-1.925 3.547 5.975 5.975 0 0 1-2.133-1.001A3.75 3.75 0 0 0 12 18Z" />
+                        </svg>
+                    </div>
+                    <div class="option-content">
+                        <span class="option-label">置顶文章</span>
+                    </div>
+                    <div class="option-switch">
+                        <label class="switch">
+                            <input type="checkbox" id="postIsTop">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 广告标记 -->
+                <div class="edit-option-item">
+                    <div class="option-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="22" height="22">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 1 1 0-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 0 1-1.44-4.282m3.102.069a18.03 18.03 0 0 1-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 0 1 8.835 2.535M10.34 6.66a23.847 23.847 0 0 0 8.835-2.535m0 0A23.74 23.74 0 0 0 18.795 3m.38 1.125a23.91 23.91 0 0 1 1.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 0 0 1.014-5.395m0-3.46c.495.413.811 1.035.811 1.73 0 .695-.316 1.317-.811 1.73m0-3.46a24.347 24.347 0 0 1 0 3.46" />
+                        </svg>
+                    </div>
+                    <div class="option-content">
+                        <span class="option-label">广告内容</span>
+                    </div>
+                    <div class="option-switch">
+                        <label class="switch">
+                            <input type="checkbox" id="postIsAdvertise">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
                 </div>
             </div>
 
-            <!-- 编辑器主体 -->
-            <div class="editor-main">
-                <form id="post-form" class="post-form">
-                    <div class="form-group">
-                        <label for="post-title">标题</label>
-                        <input type="text" id="post-title" name="title" required placeholder="输入文章标题">
-                    </div>
+            <!-- 隐藏字段 -->
+            <input type="hidden" id="postSha" value="">
+            <input type="hidden" id="postSlug" value="">
+        </form>
+    </section>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="post-slug">Slug (URL标识)</label>
-                            <input type="text" id="post-slug" name="slug" required placeholder="my-first-post">
-                        </div>
-                        <div class="form-group">
-                            <label for="post-date">发布日期</label>
-                            <input type="date" id="post-date" name="pubDate" required>
-                        </div>
-                    </div>
+    <!-- 状态提示 -->
+    <div id="editStatus" class="edit-status"></div>
 
-                    <div class="form-group">
-                        <label for="post-description">描述</label>
-                        <input type="text" id="post-description" name="description" placeholder="文章简短描述">
-                    </div>
+    <script define:vars={{ postsData }}>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="post-position">位置</label>
-                            <input type="text" id="post-position" name="position" placeholder="例如：北京">
-                        </div>
-                        <div class="form-group">
-                            <label for="post-position-url">位置链接</label>
-                            <input type="url" id="post-position-url" name="positionUrl" placeholder="https://maps.google.com/...">
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group checkbox-group">
-                            <label>
-                                <input type="checkbox" id="post-istop" name="isTop">
-                                置顶文章
-                            </label>
-                        </div>
-                        <div class="form-group checkbox-group">
-                            <label>
-                                <input type="checkbox" id="post-isadvertise" name="isAdvertise">
-                                广告标记
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="post-content">内容 (Markdown)</label>
-                        <textarea id="post-content" name="content" rows="20" required placeholder="使用 Markdown 格式编写文章内容..."></textarea>
-                    </div>
-
-                    <div class="form-actions">
-                        <input type="hidden" id="post-sha" name="sha">
-                        <button type="submit" class="btn btn-primary">保存文章</button>
-                        <button type="button" id="preview-btn" class="btn">预览</button>
-                        <button type="button" id="delete-btn" class="btn btn-danger" style="display: none;">删除</button>
-                    </div>
-                </form>
-
-                <!-- 预览区域 -->
-                <div id="preview-area" class="preview-area" style="display: none;">
-                    <h3>预览</h3>
-                    <div id="preview-content" class="preview-content"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</BaseLayout>
-
-<style>
-    .editor-container {
-        padding: 1rem 0;
-    }
-
-    .editor-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px dashed var(--color-border);
-    }
-
-    .editor-header h2 {
-        margin: 0;
-    }
-
-    .editor-actions {
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .editor-layout {
-        display: grid;
-        grid-template-columns: 250px 1fr;
-        gap: 1.5rem;
-    }
-
-    .posts-sidebar {
-        background: var(--color-link);
-        border-radius: 8px;
-        padding: 1rem;
-        height: fit-content;
-        max-height: 70vh;
-        overflow-y: auto;
-    }
-
-    .posts-sidebar h3 {
-        margin: 0 0 1rem 0;
-        font-size: 0.9rem;
-        color: var(--color-text-lighter);
-    }
-
-    .posts-list {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .post-item {
-        padding: 0.5rem;
-        background: var(--color-bg);
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 0.8rem;
-        transition: background 0.2s;
-    }
-
-    .post-item:hover {
-        background: var(--color-link-hover);
-    }
-
-    .post-item.active {
-        background: var(--color-link-go);
-        color: white;
-    }
-
-    .editor-main {
-        background: var(--color-link);
-        border-radius: 8px;
-        padding: 1.5rem;
-    }
-
-    .post-form {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.3rem;
-    }
-
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-    }
-
-    .form-group label {
-        font-size: 0.8rem;
-        font-weight: bold;
-        color: var(--color-text-lighter);
-    }
-
-    .form-group input,
-    .form-group textarea {
-        padding: 0.5rem;
-        border: 1px solid var(--color-border);
-        border-radius: 4px;
-        background: var(--color-bg);
-        color: var(--color-text);
-        font-family: inherit;
-        font-size: 0.9rem;
-    }
-
-    .form-group input:focus,
-    .form-group textarea:focus {
-        outline: none;
-        border-color: var(--color-link-go);
-    }
-
-    .form-group textarea {
-        font-family: monospace;
-        resize: vertical;
-        min-height: 300px;
-    }
-
-    .checkbox-group label {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        cursor: pointer;
-    }
-
-    .checkbox-group input[type="checkbox"] {
-        width: auto;
-    }
-
-    .form-actions {
-        display: flex;
-        gap: 0.5rem;
-        padding-top: 1rem;
-        border-top: 1px dashed var(--color-border);
-    }
-
-    .btn {
-        padding: 0.5rem 1rem;
-        border: 1px solid var(--color-border);
-        border-radius: 4px;
-        background: var(--color-button);
-        color: var(--color-text);
-        cursor: pointer;
-        font-size: 0.9rem;
-        transition: all 0.2s;
-    }
-
-    .btn:hover {
-        background: var(--color-button-hover);
-    }
-
-    .btn-primary {
-        background: var(--color-link-go);
-        color: white;
-        border-color: var(--color-link-go);
-    }
-
-    .btn-primary:hover {
-        opacity: 0.9;
-    }
-
-    .btn-danger {
-        background: var(--color-badge);
-        color: white;
-        border-color: var(--color-badge);
-    }
-
-    .preview-area {
-        margin-top: 2rem;
-        padding-top: 2rem;
-        border-top: 1px dashed var(--color-border);
-    }
-
-    .preview-area h3 {
-        margin-bottom: 1rem;
-    }
-
-    .preview-content {
-        background: var(--color-bg);
-        padding: 1rem;
-        border-radius: 4px;
-    }
-
-    @media (max-width: 768px) {
-        .editor-layout {
-            grid-template-columns: 1fr;
+        // 切换面板显示
+        function togglePanel(panelId) {
+            const panel = document.getElementById(panelId);
+            if (panel) {
+                panel.classList.toggle('hidden');
+            }
         }
 
-        .posts-sidebar {
-            max-height: 200px;
+        // 显示状态提示
+        function showStatus(message) {
+            const status = document.getElementById('editStatus');
+            status.textContent = message;
+            status.classList.add('show');
+            setTimeout(() => {
+                status.classList.remove('show');
+            }, 2000);
         }
 
-        .form-row {
-            grid-template-columns: 1fr;
+        // 生成 frontmatter
+        function generateFrontmatter(data) {
+            const frontmatter = {
+                title: data.title,
+                description: data.description || '',
+                pubDate: data.pubDate,
+            };
+
+            if (data.isTop) frontmatter.isTop = true;
+            if (data.isAdvertise) frontmatter.isAdvertise = true;
+            if (data.position) frontmatter.position = data.position;
+            if (data.positionUrl) frontmatter.positionUrl = data.positionUrl;
+
+            const yaml = Object.entries(frontmatter)
+                .map(([key, value]) => {
+                    if (typeof value === 'string') {
+                        return `${key}: '${value.replace(/'/g, "''")}'`;
+                    }
+                    return `${key}: ${value}`;
+                })
+                .join('\n');
+
+            return `---\n${yaml}\n---\n\n`;
         }
-    }
-</style>
 
-<script>
-    // 简单的 Markdown 转 HTML
-    function markdownToHtml(markdown: string): string {
-        return markdown
-            .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-            .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-            .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-            .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
-            .replace(/\*(.*)\*/gim, '<em>$1</em>')
-            .replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2">$1</a>')
-            .replace(/\n/gim, '<br>');
-    }
+        // 保存文章
+        async function savePost() {
+            const title = document.getElementById('postTitle').value.trim();
+            const content = document.getElementById('postContent').value.trim();
 
-    // 生成 frontmatter
-    function generateFrontmatter(data: any): string {
-        const frontmatter: any = {
-            title: data.title,
-            description: data.description || '',
-            pubDate: data.pubDate,
-        };
-
-        if (data.isTop) frontmatter.isTop = true;
-        if (data.isAdvertise) frontmatter.isAdvertise = true;
-        if (data.position) frontmatter.position = data.position;
-        if (data.positionUrl) frontmatter.positionUrl = data.positionUrl;
-
-        const yaml = Object.entries(frontmatter)
-            .map(([key, value]) => {
-                if (typeof value === 'string') {
-                    return `${key}: '${value.replace(/'/g, "''")}'`;
-                }
-                return `${key}: ${value}`;
-            })
-            .join('\n');
-
-        return `---\n${yaml}\n---\n\n`;
-    }
-
-    // 加载文章列表
-    async function loadPosts() {
-        try {
-            const response = await fetch('/api/github/posts');
-            const posts = await response.json();
-
-            if (posts.error) {
-                alert('加载失败: ' + posts.error);
+            if (!title || !content) {
+                showStatus('请输入标题和内容');
                 return;
             }
 
-            const listEl = document.getElementById('posts-list');
-            if (listEl) {
-                listEl.innerHTML = posts
-                    .filter((p: any) => p.name.endsWith('.md'))
-                    .map((p: any) => `
-                        <div class="post-item" data-path="${p.path}" data-sha="${p.sha}">
-                            ${p.name.replace('.md', '')}
-                        </div>
-                    `).join('');
+            const data = {
+                title: title,
+                description: content.slice(0, 100).replace(/\n/g, ' '),
+                slug: document.getElementById('postSlug').value || title.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-').replace(/^-|-$/g, ''),
+                pubDate: document.getElementById('postDate').value || new Date().toISOString().split('T')[0],
+                position: document.getElementById('postPosition').value,
+                positionUrl: document.getElementById('postPositionUrl').value,
+                isTop: document.getElementById('postIsTop').checked,
+                isAdvertise: document.getElementById('postIsAdvertise').checked,
+                content: content,
+                sha: document.getElementById('postSha').value
+            };
 
-                // 添加点击事件
-                listEl.querySelectorAll('.post-item').forEach(item => {
-                    item.addEventListener('click', () => loadPost(item.dataset.path!, item.dataset.sha!));
+            const fullContent = generateFrontmatter(data) + data.content;
+            const path = `src/content/blog/${data.slug}.md`;
+
+            const publishBtn = document.getElementById('publishBtn');
+            publishBtn.disabled = true;
+            publishBtn.textContent = '保存中...';
+
+            try {
+                const response = await fetch('/api/github/posts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        path,
+                        content: fullContent,
+                        message: data.sha ? `Update: ${data.title}` : `Create: ${data.title}`,
+                        sha: data.sha || undefined,
+                    }),
                 });
+
+                const result = await response.json();
+
+                if (result.error) {
+                    showStatus('保存失败: ' + result.error);
+                    publishBtn.disabled = false;
+                    publishBtn.textContent = data.sha ? '保存' : '发表';
+                } else {
+                    showStatus('保存成功！');
+                    document.getElementById('postSha').value = result.content.sha;
+                    document.getElementById('postSlug').value = data.slug;
+                    publishBtn.textContent = '保存';
+                    setTimeout(() => {
+                        window.location.href = `/blog/${data.slug}`;
+                    }, 1000);
+                }
+            } catch (error) {
+                showStatus('保存失败');
+                publishBtn.disabled = false;
+                publishBtn.textContent = data.sha ? '保存' : '发表';
+                console.error(error);
             }
-        } catch (error) {
-            alert('加载文章列表失败');
-            console.error(error);
         }
-    }
 
-    // 加载单篇文章
-    async function loadPost(path: string, sha: string) {
-        try {
-            const response = await fetch(`/api/github/posts?path=${encodeURIComponent(path)}`);
-            const data = await response.json();
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 从 URL 获取 slug
+            const urlParams = new URLSearchParams(window.location.search);
+            const editSlug = urlParams.get('slug');
 
-            if (data.error) {
-                alert('加载失败: ' + data.error);
-                return;
-            }
+            // 查找文章
+            const post = editSlug ? postsData.find(p => p.slug === editSlug) : null;
 
-            // 解码内容
-            const content = atob(data.content);
-            
-            // 解析 frontmatter 和内容
-            const match = content.match(/^---\n([\s\S]*?)\n---\n\n([\s\S]*)$/);
-            
-            if (match) {
-                const frontmatter = match[1];
-                const body = match[2];
-
-                // 解析 frontmatter
-                const titleMatch = frontmatter.match(/title:\s*['"]?([^'"\n]+)['"]?/);
-                const descMatch = frontmatter.match(/description:\s*['"]?([^'"\n]*)['"]?/);
-                const dateMatch = frontmatter.match(/pubDate:\s*['"]?([^'"\n]+)['"]?/);
-                const isTopMatch = frontmatter.match(/isTop:\s*(true)/);
-                const isAdMatch = frontmatter.match(/isAdvertise:\s*(true)/);
-                const posMatch = frontmatter.match(/position:\s*['"]?([^'"\n]*)['"]?/);
-                const posUrlMatch = frontmatter.match(/positionUrl:\s*['"]?([^'"\n]*)['"]?/);
-
+            if (post) {
                 // 填充表单
-                (document.getElementById('post-title') as HTMLInputElement).value = titleMatch?.[1] || '';
-                (document.getElementById('post-description') as HTMLInputElement).value = descMatch?.[1] || '';
-                (document.getElementById('post-date') as HTMLInputElement).value = dateMatch?.[1] || '';
-                (document.getElementById('post-position') as HTMLInputElement).value = posMatch?.[1] || '';
-                (document.getElementById('post-position-url') as HTMLInputElement).value = posUrlMatch?.[1] || '';
-                (document.getElementById('post-istop') as HTMLInputElement).checked = !!isTopMatch;
-                (document.getElementById('post-isadvertise') as HTMLInputElement).checked = !!isAdMatch;
-                (document.getElementById('post-content') as HTMLTextAreaElement).value = body;
-                (document.getElementById('post-sha') as HTMLInputElement).value = sha;
+                document.getElementById('postTitle').value = post.title || '';
+                document.getElementById('postContent').value = post.body || '';
+                document.getElementById('postSlug').value = post.slug || '';
+                document.getElementById('postDate').value = post.pubDate ? new Date(post.pubDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+                document.getElementById('postPosition').value = post.position || '';
+                document.getElementById('postPositionUrl').value = post.positionUrl || '';
+                document.getElementById('postIsTop').checked = post.isTop || false;
+                document.getElementById('postIsAdvertise').checked = post.isAdvertise || false;
 
-                // 从路径提取 slug
-                const slug = path.split('/').pop()?.replace('.md', '') || '';
-                (document.getElementById('post-slug') as HTMLInputElement).value = slug;
+                // 更新位置标签
+                if (post.position) {
+                    document.getElementById('locationLabel').textContent = post.position;
+                }
 
-                // 显示删除按钮
-                document.getElementById('delete-btn')!.style.display = 'inline-block';
-
-                // 高亮当前文章
-                document.querySelectorAll('.post-item').forEach(el => el.classList.remove('active'));
-                document.querySelector(`[data-path="${path}"]`)?.classList.add('active');
-            }
-        } catch (error) {
-            alert('加载文章失败');
-            console.error(error);
-        }
-    }
-
-    // 保存文章
-    async function savePost(e: Event) {
-        e.preventDefault();
-
-        const form = e.target as HTMLFormElement;
-        const formData = new FormData(form);
-        
-        const data = {
-            title: formData.get('title') as string,
-            slug: formData.get('slug') as string,
-            pubDate: formData.get('pubDate') as string,
-            description: formData.get('description') as string,
-            position: formData.get('position') as string,
-            positionUrl: formData.get('positionUrl') as string,
-            isTop: formData.get('isTop') === 'on',
-            isAdvertise: formData.get('isAdvertise') === 'on',
-            content: formData.get('content') as string,
-            sha: formData.get('sha') as string,
-        };
-
-        const fullContent = generateFrontmatter(data) + data.content;
-        const path = `src/content/blog/${data.slug}.md`;
-
-        try {
-            const response = await fetch('/api/github/posts', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    path,
-                    content: fullContent,
-                    message: data.sha ? `Update: ${data.title}` : `Create: ${data.title}`,
-                    sha: data.sha || undefined,
-                }),
-            });
-
-            const result = await response.json();
-
-            if (result.error) {
-                alert('保存失败: ' + result.error);
+                // 更新按钮文字
+                document.getElementById('publishBtn').textContent = '保存';
             } else {
-                alert('保存成功！');
-                (document.getElementById('post-sha') as HTMLInputElement).value = result.content.sha;
-                loadPosts(); // 刷新列表
+                // 新建文章，设置默认日期
+                document.getElementById('postDate').value = new Date().toISOString().split('T')[0];
             }
-        } catch (error) {
-            alert('保存失败');
-            console.error(error);
-        }
-    }
 
-    // 删除文章
-    async function deletePost() {
-        const sha = (document.getElementById('post-sha') as HTMLInputElement).value;
-        const slug = (document.getElementById('post-slug') as HTMLInputElement).value;
-        
-        if (!sha || !confirm('确定要删除这篇文章吗？')) return;
+            // 绑定发表按钮
+            document.getElementById('publishBtn').addEventListener('click', savePost);
 
-        try {
-            const response = await fetch('/api/github/posts', {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    path: `src/content/blog/${slug}.md`,
-                    sha,
-                    message: `Delete: ${slug}`,
-                }),
+            // 位置输入实时更新标签
+            document.getElementById('postPosition').addEventListener('input', (e) => {
+                const label = document.getElementById('locationLabel');
+                label.textContent = e.target.value || '所在位置';
             });
-
-            const result = await response.json();
-
-            if (result.error) {
-                alert('删除失败: ' + result.error);
-            } else {
-                alert('删除成功！');
-                form.reset();
-                document.getElementById('delete-btn')!.style.display = 'none';
-                loadPosts();
-            }
-        } catch (error) {
-            alert('删除失败');
-            console.error(error);
-        }
-    }
-
-    // 预览功能
-    function previewPost() {
-        const content = (document.getElementById('post-content') as HTMLTextAreaElement).value;
-        const previewArea = document.getElementById('preview-area');
-        const previewContent = document.getElementById('preview-content');
-        
-        if (previewArea && previewContent) {
-            previewContent.innerHTML = markdownToHtml(content);
-            previewArea.style.display = 'block';
-        }
-    }
-
-    // 新建文章
-    function newPost() {
-        const form = document.getElementById('post-form') as HTMLFormElement;
-        form.reset();
-        (document.getElementById('post-date') as HTMLInputElement).value = new Date().toISOString().split('T')[0];
-        (document.getElementById('post-sha') as HTMLInputElement).value = '';
-        document.getElementById('delete-btn')!.style.display = 'none';
-        document.querySelectorAll('.post-item').forEach(el => el.classList.remove('active'));
-    }
-
-    // 事件绑定
-    document.addEventListener('DOMContentLoaded', () => {
-        const form = document.getElementById('post-form');
-        const loadBtn = document.getElementById('load-posts-btn');
-        const newBtn = document.getElementById('new-post-btn');
-        const previewBtn = document.getElementById('preview-btn');
-        const deleteBtn = document.getElementById('delete-btn');
-
-        form?.addEventListener('submit', savePost);
-        loadBtn?.addEventListener('click', loadPosts);
-        newBtn?.addEventListener('click', newPost);
-        previewBtn?.addEventListener('click', previewPost);
-        deleteBtn?.addEventListener('click', deletePost);
-
-        // 设置默认日期
-        (document.getElementById('post-date') as HTMLInputElement).value = new Date().toISOString().split('T')[0];
-    });
-</script>
+        });
+    </script>
+</body>
+</html>
