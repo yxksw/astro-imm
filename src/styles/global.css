@@ -590,45 +590,6 @@ article {
     border-bottom: 1px dashed var(--color-border);
 }
 
-/* 欢迎区域特殊样式 */
-.post.welcome-post {
-    background: var(--color-link);
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    border-bottom: none;
-}
-
-.post.welcome-post .author-name {
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.post.welcome-post .text {
-    margin: 0.5rem 0;
-}
-
-.post.welcome-post .text .more {
-    margin: 0;
-}
-
-.post.welcome-post .text .more a {
-    color: var(--color-link-go);
-    font-weight: 500;
-    text-decoration: none;
-    transition: opacity 0.2s;
-}
-
-.post.welcome-post .text .more a:hover {
-    opacity: 0.8;
-}
-
-.post.welcome-post .post-meta {
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid var(--color-transparent);
-}
-
 /* 置顶文章样式增强 */
 .post:has(.author-badge[style*="background: #ff4757"]) {
     background: var(--color-background, rgba(247, 247, 247, 0.5));
