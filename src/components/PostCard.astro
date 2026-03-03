@@ -13,6 +13,7 @@ interface Props {
     isSingle?: boolean;
     content?: string;
     rank?: number;
+    isTop?: boolean;
 }
 
 const { 
@@ -26,7 +27,8 @@ const {
     positionUrl,
     isSingle = false,
     content = '',
-    rank
+    rank,
+    isTop = false
 } = Astro.props;
 
 const formattedDate = new Intl.DateTimeFormat('zh-CN', {
@@ -60,7 +62,10 @@ const displayContent = smartExcerpt(description || content, 140);
         <div class="post-info">
             <div class="author-name">
                 {AUTHOR_NAME}
-                {isAdvertise && (
+                {isTop && (
+                    <div class="author-badge" style="background: #ff4757;">置顶</div>
+                )}
+                {isAdvertise && !isTop && (
                     <div class="author-badge">广告</div>
                 )}
             </div>

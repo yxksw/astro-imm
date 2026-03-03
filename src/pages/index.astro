@@ -16,42 +16,19 @@ const allPosts = [...topPosts, ...normalPosts];
 ---
 
 <BaseLayout title={SITE_TITLE} description={SITE_DESCRIPTION} isHome={true}>
-    <!-- 置顶文章/欢迎语 -->
+    <!-- 置顶文章 -->
     {topPosts.length > 0 && topPosts.map(post => (
-        <article class="post">
-            <div class="author-avatar">
-                <img
-                    alt="异飨客"
-                    loading="lazy"
-                    fetchpriority="low"
-                    src="https://cdn.jsdmirror.com/gh/zsxcoder/github-img@main/img/yxk-avatar.avif">
-            </div>
-            <div class="content">
-                <div class="post-info">
-                    <div class="author-name">
-                        异飨客
-                        <div class="author-badge">置顶</div>
-                    </div>
-                </div>
-                <div class="text">
-                    {post.data.description || post.body?.substring(0, 200)}
-                    <p class="more">
-                        {NAV_LINKS.map((link, index) => (
-                            <>
-                                <a href={link.href}>{link.text}</a>
-                                {index < NAV_LINKS.length - 1 ? ' | ' : ''}
-                            </>
-                        ))}
-                    </p>
-                </div>
-                <div class="post-meta">
-                    <div class="post-position"></div>
-                    <div class="date">
-                        最近一次构建于 {new Date().toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(/\//g, '/')}
-                    </div>
-                </div>
-            </div>
-        </article>
+        <PostCard 
+            title={post.data.title}
+            description={post.data.description}
+            pubDate={post.data.pubDate}
+            updatedDate={post.data.updatedDate}
+            slug={post.slug}
+            isAdvertise={post.data.isAdvertise}
+            position={post.data.position}
+            positionUrl={post.data.positionUrl}
+            isTop={true}
+        />
     ))}
 
     <!-- 普通文章列表 -->
