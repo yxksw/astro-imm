@@ -48,7 +48,7 @@ const musicVolume = MUSIC_CONFIG.volume;
                     </div>
                 )}
                 <!-- 友链按钮 -->
-                <div class="tc-links" id="linksBtn" title="友情链接" style={`color: ${backButtonColor};`}>
+                <div class="tc-friends" id="friendsBtn" title="友情链接" style={`color: ${backButtonColor};`}>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
                     </svg>
@@ -120,39 +120,19 @@ const musicVolume = MUSIC_CONFIG.volume;
 </div>
 
 <!-- 友链弹窗 -->
-<div class="links-modal" id="linksModal" style="display: none;">
-    <div class="links-modal-content">
-        <div class="links-modal-header">
+<div class="friends-modal" id="friendsModal" style="display: none;">
+    <div class="friends-modal-content">
+        <div class="friends-modal-header">
             <span>友情链接</span>
-            <button class="close-btn" id="closeLinksModal">&times;</button>
+            <button class="close-btn" id="closeFriendsModal">&times;</button>
         </div>
-        <div class="links-modal-body">
-            <div class="links-list">
-                <a href="https://github.com" target="_blank" class="link-item">
-                    <div class="link-icon">🐙</div>
-                    <div class="link-info">
-                        <div class="link-name">GitHub</div>
-                        <div class="link-desc">全球最大的代码托管平台</div>
-                    </div>
-                </a>
-                <a href="https://astro.build" target="_blank" class="link-item">
-                    <div class="link-icon">🚀</div>
-                    <div class="link-info">
-                        <div class="link-name">Astro</div>
-                        <div class="link-desc">快速、内容驱动的网站构建框架</div>
-                    </div>
-                </a>
-                <a href="https://developer.mozilla.org" target="_blank" class="link-item">
-                    <div class="link-icon">📚</div>
-                    <div class="link-info">
-                        <div class="link-name">MDN Web Docs</div>
-                        <div class="link-desc">Web 开发者的权威文档</div>
-                    </div>
-                </a>
+        <div class="friends-modal-body">
+            <div class="friends-container" id="friendsContainer">
+                <div class="friends-loading">加载中...</div>
             </div>
         </div>
-        <div class="links-modal-footer">
-            <p>共 3 个链接</p>
+        <div class="friends-modal-footer">
+            <p id="friendsCount">共 0 个链接</p>
         </div>
     </div>
 </div>
@@ -214,33 +194,163 @@ const musicVolume = MUSIC_CONFIG.volume;
             isPlaying = !isPlaying;
         });
 
-        // 友链弹窗功能
-        const linksBtn = document.getElementById('linksBtn');
-        const linksModal = document.getElementById('linksModal');
-        const closeLinksModal = document.getElementById('closeLinksModal');
+        // 友链功能
+        const friendsBtn = document.getElementById('friendsBtn');
+        const friendsModal = document.getElementById('friendsModal');
+        const closeFriendsModal = document.getElementById('closeFriendsModal');
+        const friendsContainer = document.getElementById('friendsContainer');
+        const friendsCount = document.getElementById('friendsCount');
+        let friendsData: any[] = [];
 
         // 打开友链弹窗
-        linksBtn?.addEventListener('click', function() {
-            if (linksModal) linksModal.style.display = 'flex';
+        friendsBtn?.addEventListener('click', function() {
+            if (friendsModal) friendsModal.style.display = 'flex';
+            // 如果还没有加载过数据，则加载
+            if (friendsData.length === 0 && friendsContainer) {
+                loadFriends();
+            }
         });
 
         // 关闭友链弹窗
-        closeLinksModal?.addEventListener('click', function() {
-            if (linksModal) linksModal.style.display = 'none';
+        closeFriendsModal?.addEventListener('click', function() {
+            if (friendsModal) friendsModal.style.display = 'none';
         });
 
         // 点击弹窗外部关闭
-        linksModal?.addEventListener('click', function(e) {
-            if (e.target === linksModal && linksModal) {
-                linksModal.style.display = 'none';
+        friendsModal?.addEventListener('click', function(e) {
+            if (e.target === friendsModal && friendsModal) {
+                friendsModal.style.display = 'none';
             }
         });
+
+        // 加载友链数据
+        async function loadFriends() {
+            if (!friendsContainer) return;
+            
+            try {
+                const response = await fetch('https://cdn.jsdmirror.com/gh/yxksw/Friends@main/data/friends.json');
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error('认证失败或链接已失效');
+                    }
+                    throw new Error(`HTTP 错误：${response.status}`);
+                }
+                const data = await response.json();
+                friendsData = Array.isArray(data) ? data : (data.friends || data.data || []);
+                
+                // 渲染友链列表
+                renderFriends(friendsData);
+            } catch (error) {
+                console.error('加载友链失败:', error);
+                if (friendsContainer) {
+                    const errorMessage = error instanceof Error ? error.message : '未知错误';
+                    friendsContainer.innerHTML = `
+                        <div class="friends-error">
+                            <p>加载失败：${errorMessage}</p>
+                            <button id="retryFriendsBtn" class="retry-btn">重试</button>
+                        </div>
+                    `;
+                    // 添加重试按钮事件
+                    const retryBtn = document.getElementById('retryFriendsBtn');
+                    retryBtn?.addEventListener('click', loadFriends);
+                }
+            }
+        }
+
+        // 渲染友链列表
+        function renderFriends(friends: any[]) {
+            if (!friendsContainer || !friendsCount) return;
+            
+            console.log('渲染友链，数量:', friends.length);
+            console.log('友链数据:', friends);
+            
+            if (friends.length === 0) {
+                friendsContainer.innerHTML = '<div class="friends-empty">暂无友链</div>';
+                friendsCount.textContent = '共 0 个链接';
+                return;
+            }
+
+            const html = friends.map((friend: any, index: number) => {
+                const url = friend.url || friend.link || '#';
+                const avatar = friend.avatar || friend.logo || '';
+                const name = friend.name || '未知名称';
+                const description = friend.description || friend.desc || '';
+                
+                console.log(`渲染第${index + 1}个友链:`, { url, name, avatar });
+                
+                return `
+                    <a href="${url}" target="_blank" class="friend-item" style="display: block; text-decoration: none; color: inherit; background: var(--color-background, #f5f5f5); border-radius: 12px; padding: 16px; transition: all 0.3s ease; margin-bottom: 8px;">
+                        <div class="friend-content" style="display: flex; align-items: center; gap: 12px;">
+                            <img src="${avatar}" alt="${name}" class="friend-avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 2px solid var(--color-green, #07C160); background: #fff;" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQ4IDQ4Ij48Y2lyY2xlIGN4PSIyNCIgY3k9IjI0IiByPSIyNCIgZmlsbD0iI2UwZTBlMCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjE2IiBmaWxsPSIjOTk5Ij7lkI/oryA8L3RleHQ+PC9zdmc+'">
+                            <div class="friend-info" style="flex: 1; overflow: hidden; min-width: 0;">
+                                <p class="friend-name" style="font-size: 15px; font-weight: 600; color: var(--color-text, #333); margin: 0 0 4px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${name}</p>
+                                ${description ? `<span class="friend-description" style="font-size: 12px; color: var(--color-text-light, #999); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4;">${description}</span>` : ''}
+                            </div>
+                            <svg class="friend-arrow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="18" height="18" style="color: var(--color-text-light, #ccc); flex-shrink: 0; transition: transform 0.3s ease;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                            </svg>
+                        </div>
+                    </a>
+                `;
+            }).join('');
+
+            console.log('生成的 HTML:', html.substring(0, 200) + '...');
+            friendsContainer.innerHTML = html;
+            friendsCount.textContent = `共${friends.length}个链接`;
+            
+            // 添加全局样式支持悬停效果
+            if (!document.getElementById('friends-global-styles')) {
+                const style = document.createElement('style');
+                style.id = 'friends-global-styles';
+                style.textContent = `
+                    .friend-item {
+                        transition: all 0.3s ease !important;
+                    }
+                    .friend-item:hover {
+                        transform: translateY(-2px) !important;
+                        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+                        background: var(--color-background-hover, #e8e8e8) !important;
+                    }
+                    .friend-item:hover .friend-arrow {
+                        transform: translateX(4px) !important;
+                        color: var(--color-green, #07C160) !important;
+                    }
+                    @media (prefers-color-scheme: dark) {
+                        .friend-item {
+                            background: var(--color-background-dark, #2a2a2a) !important;
+                            border: 1px solid var(--color-border-dark, #333) !important;
+                        }
+                        .friend-item:hover {
+                            background: var(--color-background-hover-dark, #333) !important;
+                            border-color: var(--color-green, #07C160) !important;
+                        }
+                        .friend-avatar {
+                            background: var(--color-bg-dark, #1a1a1a) !important;
+                            border-color: var(--color-green, #07C160) !important;
+                        }
+                        .friend-name {
+                            color: var(--color-text-dark, #fff) !important;
+                        }
+                        .friend-description {
+                            color: var(--color-text-light-dark, #aaa) !important;
+                        }
+                        .friend-arrow {
+                            color: var(--color-text-light-dark, #666) !important;
+                        }
+                        .friend-item:hover .friend-arrow {
+                            color: var(--color-green, #07C160) !important;
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
     });
 </script>
 
 <style>
-    /* 音乐和友链按钮样式 */
-    .tc-music, .tc-links {
+    /* 音乐按钮样式 */
+    .tc-music {
         width: 40px;
         height: 40px;
         display: flex;
@@ -251,12 +361,29 @@ const musicVolume = MUSIC_CONFIG.volume;
         transition: background-color 0.2s ease;
     }
 
-    .tc-music:hover, .tc-links:hover {
+    .tc-music:hover {
+        background-color: var(--color-button-hover, rgba(255,255,255,0.1));
+    }
+
+    /* 友链按钮样式 */
+    /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+    .tc-friends {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        border-radius: 50%;
+        transition: background-color 0.2s ease;
+    }
+
+    .tc-friends:hover {
         background-color: var(--color-button-hover, rgba(255,255,255,0.1));
     }
 
     /* 音乐播放器弹窗 */
-    .music-modal, .links-modal {
+    .music-modal {
         position: fixed;
         top: 0;
         left: 0;
@@ -269,7 +396,7 @@ const musicVolume = MUSIC_CONFIG.volume;
         backdrop-filter: blur(4px);
     }
 
-    .music-modal-content, .links-modal-content {
+    .music-modal-content {
         background: var(--color-bg, #fff);
         border-radius: 12px;
         width: 90%;
@@ -279,7 +406,7 @@ const musicVolume = MUSIC_CONFIG.volume;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     }
 
-    .music-modal-header, .links-modal-header {
+    .music-modal-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -287,7 +414,7 @@ const musicVolume = MUSIC_CONFIG.volume;
         border-bottom: 1px solid var(--color-border, #eee);
     }
 
-    .music-modal-header span, .links-modal-header span {
+    .music-modal-header span {
         font-size: 18px;
         font-weight: 600;
         color: var(--color-text, #333);
@@ -352,87 +479,123 @@ const musicVolume = MUSIC_CONFIG.volume;
     }
 
     /* 友链弹窗 */
-    .links-modal-body {
-        padding: 10px;
-        max-height: 400px;
-        overflow-y: auto;
+    .friends-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(4px);
+        display: none;
     }
 
-    .links-list {
+    .friends-modal.show {
+        display: flex;
+    }
+
+    .friends-modal-content {
+        background: var(--color-bg, #fff);
+        border-radius: 16px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 80vh;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         display: flex;
         flex-direction: column;
+    }
+
+    .friends-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        border-bottom: 2px solid var(--color-green, #07C160);
+    }
+
+    .friends-modal-header span {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--color-text, #333);
+        display: flex;
+        align-items: center;
         gap: 8px;
     }
 
-    .link-item {
-        display: flex;
-        align-items: center;
-        padding: 12px;
-        border-radius: 8px;
-        text-decoration: none;
-        color: inherit;
-        transition: background-color 0.2s;
+    .friends-modal-header span::before {
+        content: '👥';
+        font-size: 24px;
     }
 
-    .link-item:hover {
-        background-color: var(--color-button, #f5f5f5);
-    }
-
-    .link-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        background: var(--color-button, #f0f0f0);
-        margin-right: 12px;
-        flex-shrink: 0;
-    }
-
-    .link-info {
+    .friends-modal-body {
+        padding: 20px;
+        overflow-y: auto;
         flex: 1;
-        min-width: 0;
+        min-height: 200px;
+        max-height: calc(80vh - 140px);
     }
 
-    .link-name {
-        font-weight: 600;
-        font-size: 15px;
-        color: var(--color-text, #333);
-        margin-bottom: 2px;
-    }
-
-    .link-desc {
-        font-size: 12px;
-        color: var(--color-text-light, #999);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .links-modal-footer {
+    .friends-modal-footer {
         padding: 12px 20px;
         border-top: 1px solid var(--color-border, #eee);
         text-align: center;
+        flex-shrink: 0;
+        background: var(--color-background, #f5f5f5);
     }
 
-    .links-modal-footer p {
-        font-size: 12px;
+    .friends-modal-footer p {
         color: var(--color-text-light, #999);
+        font-size: 12px;
         margin: 0;
     }
 
+    .friends-loading,
+    .friends-error,
+    .friends-empty {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--color-text-light, #999);
+        font-size: 14px;
+    }
+
+    .friends-error p {
+        margin: 0 0 15px 0;
+        line-height: 1.5;
+    }
+
+    .retry-btn {
+        padding: 10px 24px;
+        background: var(--color-green, #07C160);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(7, 193, 96, 0.3);
+    }
+
+    .retry-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(7, 193, 96, 0.4);
+    }
+
+    /* 友链卡片样式 - 通过 JS 动态添加全局样式 */
+
     @media (prefers-color-scheme: dark) {
-        .music-modal-content, .links-modal-content {
+        .music-modal-content {
             background: var(--color-bg-dark, #1a1a1a);
         }
 
-        .music-modal-header, .links-modal-header {
+        .music-modal-header {
             border-bottom-color: var(--color-border-dark, #333);
         }
 
-        .music-modal-header span, .links-modal-header span {
+        .music-modal-header span {
             color: var(--color-text-dark, #fff);
         }
 
@@ -440,20 +603,36 @@ const musicVolume = MUSIC_CONFIG.volume;
             color: var(--color-text-light-dark, #888);
         }
 
-        .link-item:hover {
-            background-color: var(--color-button-dark, #2a2a2a);
+        .music-info p {
+            color: var(--color-text-light-dark, #aaa);
         }
 
-        .link-icon {
-            background: var(--color-button-dark, #2a2a2a);
+        /* 友链弹窗深色模式 */
+        .friends-modal-content {
+            background: var(--color-bg-dark, #1a1a1a);
         }
 
-        .link-name {
+        .friends-modal-header {
+            border-bottom-color: var(--color-green, #07C160);
+        }
+
+        .friends-modal-header span {
             color: var(--color-text-dark, #fff);
         }
 
-        .links-modal-footer {
+        .friends-modal-footer {
             border-top-color: var(--color-border-dark, #333);
+            background: var(--color-background-dark, #2a2a2a);
+        }
+
+        .friends-loading,
+        .friends-error,
+        .friends-empty {
+            color: var(--color-text-light-dark, #aaa);
+        }
+
+        .retry-btn {
+            box-shadow: 0 4px 12px rgba(7, 193, 96, 0.5);
         }
     }
 </style>

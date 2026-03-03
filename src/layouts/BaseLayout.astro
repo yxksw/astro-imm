@@ -26,6 +26,27 @@ const {
     <meta name="description" content={description}>
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <link rel="sitemap" href="/sitemap-index.xml" />
+    <script>
+        // 初始化主题
+        (function() {
+            function setTheme(theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+            }
+            
+            // 检测系统主题
+            function getSystemTheme() {
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            
+            // 设置初始主题
+            setTheme(getSystemTheme());
+            
+            // 监听系统主题变化
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                setTheme(e.matches ? 'dark' : 'light');
+            });
+        })();
+    </script>
 </head>
 <body>
     <Header isHome={isHome} />

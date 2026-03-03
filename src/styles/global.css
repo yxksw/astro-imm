@@ -146,34 +146,162 @@ pre code {
     line-height: 1.5;
 }
 
-/* Shiki 代码高亮样式 */
-pre.shiki {
-    background-color: #1f2937 !important;
-    color: #e5e7eb !important;
+/* Prism.js 代码高亮样式 - 浅色模式默认 */
+pre[class*="language-"] {
+    background: #f6f8fa !important;
+    color: #24292f !important;
     margin: 1em 0;
+    padding: 1em;
     border-radius: 8px;
     overflow-x: auto;
-    position: relative;
-}
-
-pre.shiki code {
-    background-color: transparent !important;
-    color: inherit !important;
-    display: block;
-    padding: 1em;
+    border: 1px solid #e1e4e8 !important;
     font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
     font-size: 0.9em;
     line-height: 1.6;
 }
 
-/* Shiki 语法高亮颜色适配 */
-pre.shiki .line {
-    display: block;
+/* 深色模式适配 */
+html[data-theme="dark"] pre[class*="language-"] {
+    background: #0d1117 !important;
+    color: #c9d1d9 !important;
+    border-color: #30363d !important;
 }
 
-/* 确保代码块内文字清晰可见 */
-pre.shiki span {
-    color: inherit;
+@media (prefers-color-scheme: dark) {
+    html:not([data-theme]) pre[class*="language-"] {
+        background: #0d1117 !important;
+        color: #c9d1d9 !important;
+        border-color: #30363d !important;
+    }
+}
+
+/* Prism.js token 颜色 - 浅色模式 */
+.token.comment,
+.token.block-comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+    color: #6a737d !important;
+}
+
+.token.punctuation {
+    color: #24292f !important;
+}
+
+.token.namespace,
+.token.deleted {
+    color: #cb2431 !important;
+}
+
+.token.function-name,
+.token.function,
+.token.class-name {
+    color: #6f42c1 !important;
+}
+
+.token.attr-name,
+.token.keyword,
+.token.module,
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol {
+    color: #d73a49 !important;
+}
+
+.token.selector,
+.token.char,
+.token.builtin,
+.token.string,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string,
+.token.attr-value,
+.token.control,
+.token.directive,
+.token.unit,
+.token.statement,
+.token.regex,
+.token.atrule,
+.token.inserted {
+    color: #032f62 !important;
+}
+
+.token.operator,
+.token.entity {
+    color: #d73a49 !important;
+}
+
+.token.important,
+.token.bold {
+    font-weight: bold !important;
+}
+
+.token.italic {
+    font-style: italic !important;
+}
+
+/* 深色模式下的 token 颜色 */
+html[data-theme="dark"] .token.comment,
+html[data-theme="dark"] .token.block-comment,
+html[data-theme="dark"] .token.prolog,
+html[data-theme="dark"] .token.doctype,
+html[data-theme="dark"] .token.cdata {
+    color: #8b949e !important;
+}
+
+html[data-theme="dark"] .token.punctuation {
+    color: #c9d1d9 !important;
+}
+
+html[data-theme="dark"] .token.namespace,
+html[data-theme="dark"] .token.deleted {
+    color: #ff7b72 !important;
+}
+
+html[data-theme="dark"] .token.function-name,
+html[data-theme="dark"] .token.function,
+html[data-theme="dark"] .token.class-name {
+    color: #d2a8ff !important;
+}
+
+html[data-theme="dark"] .token.attr-name,
+html[data-theme="dark"] .token.keyword,
+html[data-theme="dark"] .token.module,
+html[data-theme="dark"] .token.property,
+html[data-theme="dark"] .token.tag,
+html[data-theme="dark"] .token.boolean,
+html[data-theme="dark"] .token.number,
+html[data-theme="dark"] .token.constant,
+html[data-theme="dark"] .token.symbol {
+    color: #ff7b72 !important;
+}
+
+html[data-theme="dark"] .token.selector,
+html[data-theme="dark"] .token.char,
+html[data-theme="dark"] .token.builtin,
+html[data-theme="dark"] .token.string,
+html[data-theme="dark"] .token.entity,
+html[data-theme="dark"] .token.url,
+html[data-theme="dark"] .language-css .token.string,
+html[data-theme="dark"] .style .token.string,
+html[data-theme="dark"] .token.attr-value,
+html[data-theme="dark"] .token.control,
+html[data-theme="dark"] .token.directive,
+html[data-theme="dark"] .token.unit,
+html[data-theme="dark"] .token.statement,
+html[data-theme="dark"] .token.regex,
+html[data-theme="dark"] .token.atrule,
+html[data-theme="dark"] .token.inserted {
+    color: #a5d6ff !important;
+}
+
+html[data-theme="dark"] .token.operator,
+html[data-theme="dark"] .token.entity {
+    color: #ff7b72 !important;
 }
 
 /* 代码块语言标签 */

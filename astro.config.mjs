@@ -12,13 +12,10 @@ export default defineConfig({
     // 构建输出目录
     outDir: './dist',
     integrations: [mdx(), sitemap()],
-    // Markdown配置
+    // Markdown 配置
     markdown: {
-        shikiConfig: {
-            // 使用单一主题，通过 CSS 变量适配深色模式
-            theme: 'github-dark',
-            wrap: true,
-        },
+        // 使用 Prism.js 进行代码高亮，通过 CSS 适配深色模式
+        syntaxHighlight: 'prism',
     },
     // 开发服务器配置
     server: {
