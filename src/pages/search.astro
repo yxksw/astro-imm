@@ -4,49 +4,126 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import PostCard from '../components/PostCard.astro';
 import { SITE_TITLE } from '../consts';
 
-const query = Astro.url.searchParams.get('q') || '';
-
+// 获取所有文章
 const posts = await getCollection('blog');
 
-// 搜索过滤
-const searchResults = query 
-    ? posts.filter(post => {
-        const searchText = `${post.data.title} ${post.data.description || ''} ${post.body || ''}`.toLowerCase();
-        return searchText.includes(query.toLowerCase());
-    }).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
-    : [];
+// 序列化文章数据供客户端使用
+const postsData = posts.map(post => ({
+    slug: post.slug,
+    title: post.data.title,
+    description: post.data.description || '',
+    body: post.body || '',
+    pubDate: post.data.pubDate,
+    updatedDate: post.data.updatedDate,
+    isAdvertise: post.data.isAdvertise,
+    position: post.data.position,
+    positionUrl: post.data.positionUrl,
+}));
 ---
 
-<BaseLayout title={`搜索: ${query} | ${SITE_TITLE}`}>
-    <div style="margin-bottom: 1rem; padding: 0.5rem; background: var(--color-link); border-radius: 4px;">
-        <strong>搜索关键词：</strong>{query}
+<BaseLayout title={`搜索 | ${SITE_TITLE}`}>
+    <div id="search-info" style="margin-bottom: 1rem; padding: 0.5rem; background: var(--color-link); border-radius: 4px;">
+        <strong>搜索关键词：</strong><span id="search-query"></span>
         <span style="color: var(--color-text-lighter); margin-left: 1rem;">
-            找到 {searchResults.length} 个结果
+            找到 <span id="search-count">0</span> 个结果
         </span>
     </div>
     
-    {searchResults.map(post => (
-        <PostCard 
-            title={post.data.title}
-            description={post.data.description}
-            pubDate={post.data.pubDate}
-            updatedDate={post.data.updatedDate}
-            slug={post.slug}
-            isAdvertise={post.data.isAdvertise}
-            position={post.data.position}
-            positionUrl={post.data.positionUrl}
-        />
-    ))}
+    <div id="search-results">
+        <!-- 搜索结果将在这里显示 -->
+    </div>
     
-    {query && searchResults.length === 0 && (
-        <div class="no-more-posts">
-            没有找到与 "{query}" 相关的文章
-        </div>
-    )}
+    <div id="no-query" class="no-more-posts" style="display: none;">
+        请输入搜索关键词
+    </div>
     
-    {!query && (
-        <div class="no-more-posts">
-            请输入搜索关键词
-        </div>
-    )}
+    <div id="no-results" class="no-more-posts" style="display: none;">
+        没有找到相关文章
+    </div>
 </BaseLayout>
+
+<script define:vars={{ postsData }}>
+    // 获取 URL 查询参数
+    function getQueryParam(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name) || '';
+    }
+
+    // 执行搜索
+    function performSearch() {
+        const query = getQueryParam('q');
+        const queryElement = document.getElementById('search-query');
+        const countElement = document.getElementById('search-count');
+        const resultsContainer = document.getElementById('search-results');
+        const noQueryElement = document.getElementById('no-query');
+        const noResultsElement = document.getElementById('no-results');
+        const searchInfoElement = document.getElementById('search-info');
+
+        // 显示搜索关键词
+        if (queryElement) {
+            queryElement.textContent = query;
+        }
+
+        // 如果没有搜索词
+        if (!query) {
+            if (noQueryElement) noQueryElement.style.display = 'block';
+            if (searchInfoElement) searchInfoElement.style.display = 'none';
+            return;
+        }
+
+        // 搜索文章
+        const searchResults = postsData.filter(post => {
+            const searchText = `${post.title} ${post.description} ${post.body}`.toLowerCase();
+            return searchText.includes(query.toLowerCase());
+        }).sort((a, b) => new Date(b.pubDate).valueOf() - new Date(a.pubDate).valueOf());
+
+        // 更新结果数量
+        if (countElement) {
+            countElement.textContent = searchResults.length;
+        }
+
+        // 显示搜索结果
+        if (searchResults.length === 0) {
+            if (noResultsElement) noResultsElement.style.display = 'block';
+        } else {
+            // 渲染搜索结果
+            if (resultsContainer) {
+                resultsContainer.innerHTML = searchResults.map(post => `
+                    <article class="post">
+                        <div class="author-avatar">
+                            <img alt="${post.title}" loading="lazy" fetchpriority="low" src="https://cdn.jsdmirror.com/gh/zsxcoder/github-img@main/img/yxk-avatar.avif">
+                        </div>
+                        <div class="content">
+                            <div class="post-info">
+                                <div class="author-name">
+                                    异飨客
+                                    ${post.isAdvertise ? '<div class="author-badge">广告</div>' : ''}
+                                </div>
+                            </div>
+                            <div class="text">
+                                <h3 style="margin: 0 0 0.5rem 0;"><a href="/blog/${post.slug}" style="color: inherit; text-decoration: none;">${post.title}</a></h3>
+                                <p style="margin: 0; color: var(--color-text-lighter);">${post.description}</p>
+                                <p class="more"><a href="/blog/${post.slug}" title="${post.title}">…全文</a></p>
+                            </div>
+                            ${post.position ? `
+                                <div class="post-location">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="14" height="14">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                                    </svg>
+                                    ${post.positionUrl ? `<a href="${post.positionUrl}" target="_blank">${post.position}</a>` : `<span>${post.position}</span>`}
+                                </div>
+                            ` : ''}
+                            <div class="post-date">
+                                <span>${new Date(post.pubDate).toLocaleDateString('zh-CN')}</span>
+                            </div>
+                        </div>
+                    </article>
+                `).join('');
+            }
+        }
+    }
+
+    // 页面加载完成后执行搜索
+    document.addEventListener('DOMContentLoaded', performSearch);
+</script>
