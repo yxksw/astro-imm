@@ -706,24 +706,33 @@ main .loader,
     justify-content: center;
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(7, 193, 96, 0.3);
-    transition: all 0.3s ease;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                visibility 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                background 0.3s ease,
+                box-shadow 0.3s ease;
     z-index: 999;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(20px);
+    transform: translateY(30px) scale(0.8);
     border: none;
+    will-change: transform, opacity;
 }
 
 .back-to-top.show {
     opacity: 1;
     visibility: visible;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
 }
 
 .back-to-top:hover {
     background: #06a950;
-    transform: translateY(-4px);
-    box-shadow: 0 6px 16px rgba(7, 193, 96, 0.4);
+    transform: translateY(-6px) scale(1.05);
+    box-shadow: 0 8px 24px rgba(7, 193, 96, 0.5);
+}
+
+.back-to-top:active {
+    transform: translateY(-2px) scale(0.95);
 }
 
 .back-to-top svg {
