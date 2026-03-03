@@ -1,5 +1,5 @@
 ---
-import { SITE_TITLE, SITE_DESCRIPTION, HEADER_CONFIG } from '../consts';
+import { SITE_TITLE, SITE_DESCRIPTION, HEADER_CONFIG, MUSIC_CONFIG } from '../consts';
 
 interface Props {
     isHome?: boolean;
@@ -16,6 +16,14 @@ const topTitleColor = HEADER_CONFIG.topTitleColor || '#ffffff';
 const topDescriptionColor = HEADER_CONFIG.topDescriptionColor || '#ffffff';
 const backButtonColor = HEADER_CONFIG.backButtonColor || '#ffffff';
 const settingButtonColor = HEADER_CONFIG.settingButtonColor || '#ffffff';
+
+// 音乐配置
+const musicEnabled = MUSIC_CONFIG.enabled;
+const musicSrc = MUSIC_CONFIG.src;
+const musicName = MUSIC_CONFIG.name;
+const musicAutoplay = MUSIC_CONFIG.autoplay;
+const musicLoop = MUSIC_CONFIG.loop;
+const musicVolume = MUSIC_CONFIG.volume;
 ---
 
 {HEADER_CONFIG.showTopBar && (
@@ -31,12 +39,14 @@ const settingButtonColor = HEADER_CONFIG.settingButtonColor || '#ffffff';
                         </svg>
                     </a>
                 )}
-                <!-- 音乐按钮 -->
-                <div class="tc-music" id="musicBtn" title="音乐播放器" style={`color: ${backButtonColor};`}>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m9 9 10.5-3m0 6.553v3.75a2.25 2.25 0 0 1-1.632 2.163l-1.32.377a1.803 1.803 0 1 1-.99-3.467l2.31-.66a2.25 2.25 0 0 0 1.632-2.163Zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 0 1-1.632 2.163l-1.32.377a1.803 1.803 0 0 1-.99-3.467l2.31-.66A2.25 2.25 0 0 0 9 15.553Z" />
-                    </svg>
-                </div>
+                {musicEnabled && (
+                    <!-- 音乐按钮 -->
+                    <div class="tc-music" id="musicBtn" title={`音乐播放器 - ${musicName}`} style={`color: ${backButtonColor};`}>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m9 9 10.5-3m0 6.553v3.75a2.25 2.25 0 0 1-1.632 2.163l-1.32.377a1.803 1.803 0 1 1-.99-3.467l2.31-.66a2.25 2.25 0 0 0 1.632-2.163Zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 0 1-1.632 2.163l-1.32.377a1.803 1.803 0 0 1-.99-3.467l2.31-.66A2.25 2.25 0 0 0 9 15.553Z" />
+                        </svg>
+                    </div>
+                )}
                 <!-- 友链按钮 -->
                 <div class="tc-links" id="linksBtn" title="友情链接" style={`color: ${backButtonColor};`}>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
@@ -102,8 +112,8 @@ const settingButtonColor = HEADER_CONFIG.settingButtonColor || '#ffffff';
                     <p id="musicStatus">点击播放开始听音乐</p>
                 </div>
             </div>
-            <audio id="bgMusic" loop>
-                <source src="" type="audio/mpeg">
+            <audio id="bgMusic" loop={musicLoop} autoplay={musicAutoplay} data-volume={musicVolume}>
+                <source src={musicSrc} type="audio/mpeg">
             </audio>
         </div>
     </div>

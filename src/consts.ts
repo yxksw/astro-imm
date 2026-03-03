@@ -62,3 +62,21 @@ export const FOOTER_CONFIG = {
         { name: 'iMM', url: '#' },
     ],
 };
+
+// 音乐播放器配置
+export const MUSIC_CONFIG = {
+    // 是否启用音乐播放器
+    enabled: true,
+    // 音乐文件URL（支持MP3格式）
+    // 可以使用网络链接，如网易云音乐外链：https://music.163.com/song/media/outer/url?id=歌曲ID.mp3
+    // 或使用本地文件：/music/background.mp3（需放在public目录）
+    src: 'https://music.163.com/song/media/outer/url?id=1957502053.mp3',
+    // 音乐名称（显示在播放器中）
+    name: '背景音乐',
+    // 是否自动播放（注意：部分浏览器可能阻止自动播放）
+    autoplay: false,
+    // 是否循环播放
+    loop: true,
+    // 默认音量（0-1）
+    volume: 0.5,
+};
