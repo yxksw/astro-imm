@@ -29,12 +29,12 @@ const {
     <script>
         // 初始化主题
         (function() {
-            function setTheme(theme) {
+            function setTheme(theme: string) {
                 document.documentElement.setAttribute('data-theme', theme);
             }
             
             // 检测系统主题
-            function getSystemTheme() {
+            function getSystemTheme(): string {
                 return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
             }
             
@@ -56,5 +56,165 @@ const {
     </main>
     
     <Footer />
+    
+    <!-- Live2D 看板娘 -->
+    <script>
+        // 声明全局函数
+        declare function initWidget(config: any): void;
+        
+        // 设置主题函数
+        function setTheme(theme: string) {
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+        
+        // 获取当前主题
+        function getCurrentTheme(): string {
+            return document.documentElement.getAttribute('data-theme') || 'light';
+        }
+        
+        // 只在桌面端加载 Live2D
+        if (screen.width >= 768) {
+            // 使用远程 CDN
+            const cdnPath = 'https://cdn.jsdmirror.com/gh/yxksw/live2d-widget-v3@main/'
+            
+            // 配置看板娘位置：'left' 或 'right'
+            const live2dPosition = 'left' // 修改这里：'left' = 左下角，'right' = 右下角
+            
+            const config = {
+                // 资源路径
+                path: {
+                    homePath: '/',
+                    modelPath: cdnPath + '/Resources/',
+                    cssPath: cdnPath + '/waifu.css',
+                    darkCssPath: cdnPath + '/waifu-dark.css',
+                    tipsJsonPath: cdnPath + '/waifu-tips.json',
+                    tipsJsPath: cdnPath + '/waifu-tips.js',
+                    live2dCorePath: cdnPath + '/Core/live2dcubismcore.js',
+                    live2dSdkPath: cdnPath + '/live2d-sdk.js',
+                },
+                // 工具栏
+                tools: [
+                    'hitokoto',
+                    'asteroids',
+                    'express',
+                    'switch-model',
+                    'switch-texture',
+                    'photo',
+                    'info',
+                    'quit',
+                ],
+                // 模型拖拽
+                drag: {
+                    enable: true,
+                    direction: ['x', 'y'],
+                },
+                // 模型切换 (order: 顺序切换，random: 随机切换)
+                switchType: 'order',
+            }
+            
+            // 加载资源并初始化
+            Promise.all([
+                loadExternalResource(config.path.cssPath, 'css'),
+                loadExternalResource(config.path.darkCssPath, 'css'),
+                loadExternalResource(config.path.live2dCorePath, 'js'),
+                loadExternalResource(config.path.live2dSdkPath, 'js'),
+                loadExternalResource(config.path.tipsJsPath, 'js'),
+            ]).then(() => {
+                initWidget({
+                    waifuPath: config.path.tipsJsonPath,
+                    cdnPath: config.path.modelPath,
+                    tools: config.tools,
+                    dragEnable: config.drag.enable,
+                    dragDirection: config.drag.direction,
+                    switchType: config.switchType,
+                })
+                
+                // 设置看板娘位置
+                setTimeout(() => {
+                    const waifu = document.getElementById('waifu')
+                    if (waifu) {
+                        // 移除默认位置类
+                        waifu.classList.remove('waifu-left', 'waifu-right')
+                        // 添加配置的位置类
+                        waifu.classList.add(live2dPosition === 'left' ? 'waifu-left' : 'waifu-right')
+                    }
+                }, 100)
+                
+                // 等待对话框创建后应用样式
+                setTimeout(() => {
+                    updateLive2DTheme()
+                    // 使用 MutationObserver 监控对话框变化
+                    observeWaifuChanges()
+                }, 500)
+            })
+            
+            // 监听主题变化
+            if (window.matchMedia) {
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                    // 更新 HTML 的 data-theme 属性
+                    setTheme(e.matches ? 'dark' : 'light')
+                    // 更新 Live2D 主题
+                    updateLive2DTheme()
+                })
+            }
+            
+            // 监听自定义主题事件（用于其他组件触发）
+            document.addEventListener('theme-change', (e) => {
+                updateLive2DTheme()
+            })
+        }
+        
+        // 监控 Live2D 对话框变化
+        function observeWaifuChanges() {
+            const waifu = document.getElementById('waifu')
+            if (!waifu) {
+                setTimeout(observeWaifuChanges, 500)
+                return
+            }
+            
+            const observer = new MutationObserver(() => {
+                // 对话框变化时，CSS 会自动处理样式
+            })
+            
+            observer.observe(waifu, {
+                childList: true,
+                subtree: true
+            })
+        }
+        
+        // 更新 Live2D 主题
+        function updateLive2DTheme() {
+            // CSS 已经处理了深色模式，通过 data-theme 属性自动应用
+            // 触发重绘以确保样式更新
+            const waifu = document.getElementById('waifu')
+            if (waifu) {
+                // 强制重新应用样式
+                waifu.style.opacity = '0'
+                setTimeout(() => {
+                    waifu.style.opacity = '1'
+                }, 50)
+            }
+        }
+        
+        // 异步加载资源
+        function loadExternalResource(url: string, type: 'css' | 'js'): Promise<string> {
+            return new Promise((resolve, reject) => {
+                let tag: HTMLLinkElement | HTMLScriptElement | null = null
+                if (type === 'css') {
+                    tag = document.createElement('link')
+                    tag.rel = 'stylesheet'
+                    tag.href = url
+                } else if (type === 'js') {
+                    tag = document.createElement('script')
+                    tag.src = url
+                }
+                if (tag) {
+                    tag.onload = () => resolve(url)
+                    tag.onerror = () => reject(url)
+                    document.head.appendChild(tag)
+                }
+            })
+        }
+    </script>
 </body>
 </html>
