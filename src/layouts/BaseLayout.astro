@@ -76,6 +76,7 @@ const {
         if (screen.width >= 768) {
             // 使用远程 CDN
             const cdnPath = 'https://cdn.jsdmirror.com/gh/yxksw/live2d-widget-v3@main/'
+            const waifuDarkCssUrl = 'https://cdn.jsdelivr.net/gh/yxksw/live2d-widget-v3@main/waifu-dark.css?t=' + Date.now()
             
             // 配置看板娘位置：'left' 或 'right'
             const live2dPosition = 'left' // 修改这里：'left' = 左下角，'right' = 右下角
@@ -115,7 +116,7 @@ const {
             // 加载资源并初始化
             Promise.all([
                 loadExternalResource(config.path.cssPath, 'css'),
-                loadExternalResource(config.path.darkCssPath, 'css'),
+                loadExternalResource(waifuDarkCssUrl, 'css'),
                 loadExternalResource(config.path.live2dCorePath, 'js'),
                 loadExternalResource(config.path.live2dSdkPath, 'js'),
                 loadExternalResource(config.path.tipsJsPath, 'js'),
@@ -146,6 +147,30 @@ const {
                     const currentTheme = getCurrentTheme()
                     console.log('[Live2D] 当前主题:', currentTheme)
                     console.log('[Live2D] HTML data-theme:', document.documentElement.getAttribute('data-theme'))
+                    
+                    // 调试：检查 waifu-dark.css 是否加载
+                    const styles = Array.from(document.styleSheets)
+                    const darkCssLoaded = styles.some(sheet => {
+                        try {
+                            return Array.from(sheet.cssRules || []).some(rule => 
+                                rule.cssText && rule.cssText.includes('waifu-tips') && rule.cssText.includes('data-theme="dark"')
+                            )
+                        } catch {
+                            return false
+                        }
+                    })
+                    console.log('[Live2D] waifu-dark.css 是否加载:', darkCssLoaded)
+                    
+                    // 调试：检查对话框元素的实际样式
+                    const waifuTips = document.getElementById('waifu-tips')
+                    if (waifuTips) {
+                        const computedStyle = window.getComputedStyle(waifuTips)
+                        console.log('[Live2D] 对话框背景色:', computedStyle.backgroundColor)
+                        console.log('[Live2D] 对话框文字颜色:', computedStyle.color)
+                        console.log('[Live2D] 对话框边框:', computedStyle.border)
+                    } else {
+                        console.log('[Live2D] 未找到 waifu-tips 元素')
+                    }
                     
                     updateLive2DTheme()
                     // 使用 MutationObserver 监控对话框变化
