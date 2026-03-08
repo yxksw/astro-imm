@@ -142,6 +142,11 @@ const {
                 
                 // 等待对话框创建后应用样式
                 setTimeout(() => {
+                    // 调试：输出当前主题
+                    const currentTheme = getCurrentTheme()
+                    console.log('[Live2D] 当前主题:', currentTheme)
+                    console.log('[Live2D] HTML data-theme:', document.documentElement.getAttribute('data-theme'))
+                    
                     updateLive2DTheme()
                     // 使用 MutationObserver 监控对话框变化
                     observeWaifuChanges()
